@@ -1,0 +1,96 @@
+/*
+ * Copyright (C) 2013 Ryuan Choi
+ *
+ * License LGPL-3, see COPYING file at project folder.
+ */
+
+collections {
+   group { name: "main_layout";
+      parts {
+         part { name: "content";
+            type: SWALLOW;
+            description { state: "default" 0.0;
+            }
+         }
+         // urlbar
+         part { name: "urlbar.bg";
+            type: RECT;
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               align: 1 1;
+               min: 0 44;
+               rel1.relative: 0.0 0.0;
+               rel2.relative: 1.0 0.0;
+               color: 100 100 100 155;
+               visible: 0;
+            }
+            description { state: "on" 0.0;
+               inherit: "default" 0.0;
+               align: 1 0;
+               visible: 1;
+            }
+         }
+         part { name: "urlbar";
+            type: SWALLOW;
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               rel1.to: "urlbar.bg";
+               rel2.to: "urlbar.bg";
+            }
+         }
+
+         // multiplebar
+         part { name: "multiplebar.bg";
+            type: RECT;
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               align: 1 0;
+               min: 0 100;
+               rel1.relative: 0.0 1.0;
+               rel2.relative: 1.0 1.0;
+               color: 100 100 100 155;
+               visible: 0;
+            }
+            description { state: "on" 0.0;
+               inherit: "default" 0.0;
+               align: 1 1;
+               visible: 1;
+            }
+         }
+         part { name: "multiplebar";
+            type: SWALLOW;
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               rel1.to: "multiplebar.bg";
+               rel2.to: "multiplebar.bg";
+            }
+         }
+      }
+      programs {
+         program {
+            signal: "urlbar,on";
+            action: STATE_SET "on" 0.0;
+            transition: LINEAR 0.2;
+            target: "urlbar.bg";
+         }
+         program {
+            signal: "urlbar,off";
+            action: STATE_SET "default" 0.0;
+            transition: LINEAR 0.2;
+            target: "urlbar.bg";
+         }
+         program {
+            signal: "multiplebar,on";
+            action: STATE_SET "on" 0.0;
+            transition: LINEAR 0.2;
+            target: "multiplebar.bg";
+         }
+         program {
+            signal: "multiplebar,off";
+            action: STATE_SET "default" 0.0;
+            transition: LINEAR 0.2;
+            target: "multiplebar.bg";
+         }
+      }
+   }
+}
