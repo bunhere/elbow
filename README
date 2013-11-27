@@ -1,0 +1,11 @@
+EFL based browser (Early stage)
+
+How to build:
+
+mkdir build && cd build
+cmake ..
+
+option: 
+ - WEBKIT_BACKEND : Choose webkit backend. Default is elm_web ( ewebkit / ewebkit2 / elm_web )
+    ex) cmake .. -DWEBKIT_BACKEND=ewebkit
+ 
