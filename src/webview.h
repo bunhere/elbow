@@ -39,10 +39,10 @@ Evas_Object *webview_ewk2_add(Evas_Object* parent, Browser_Data* bd);
 
 #else
 #define webview_back                  elm_web_back
-#define webview_back_possible         elm_web_back_possible
+#define webview_back_possible         elm_web_back_possible_get
 #define webview_focus_set             elm_object_focus_set
 #define webview_forward               elm_web_forward
-#define webview_forward_possible      elm_web_forward_possible
+#define webview_forward_possible      elm_web_forward_possible_get
 #define webview_reload_bypass_cache   elm_web_reload_full
 #define webview_url_set               elm_web_url_set
 #define webview_user_agent_set        elm_web_useragent_set

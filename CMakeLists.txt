@@ -33,6 +33,9 @@ elseif ("${WEBKIT_BACKEND}" STREQUAL "ewebkit2")
 else ()
     set(WEBKIT_BACKEND "elm_web")
     add_definitions(-DUSE_ELM_WEB=1)
+
+    # How to detect whether elementary build with ewebkit or ewebkit2
+    find_package(EWebKit REQUIRED)
 endif ()
 
 message("Selected web backend is ${WEBKIT_BACKEND}")
@@ -63,6 +66,7 @@ set(ELBOW_LIBRARIES
     ${EVAS_LIBRARIES}
 )
 
+message("::: ${ELBOW_LIBRARIES}")
 add_subdirectory(data/themes)
 
 add_executable(elbow ${ELBOW_SOURCES})
