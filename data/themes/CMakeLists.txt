@@ -29,7 +29,7 @@ set(WEBKIT_THEME_OUTPUT ${THEME_BINARY_DIR}/webkit.edj)
 
 add_custom_command(
     OUTPUT ${WEBKIT_THEME_OUTPUT}
-    COMMAND ${EDJE_CC_EXECUTABLE} webkit.edc ${WEBKIT_THEME_OUTPUT}
+    COMMAND ${EDJE_CC_EXECUTABLE} -id widget/scrollbar webkit.edc ${WEBKIT_THEME_OUTPUT}
     DEPENDS
         webkit.edc
         widget/button/button.edc
@@ -99,10 +99,6 @@ add_custom_command(
         widget/radio/img_radio_on.png
         widget/radio/radio.edc
         widget/scrollbar/scrollbar.edc
-        widget/scrollbar/scrollbar_h.png
-        widget/scrollbar/scrollbar_knob_h.png
-        widget/scrollbar/scrollbar_knob_v.png
-        widget/scrollbar/scrollbar_v.png
         widget/search/cancel/cancel_normal_button2.png
         widget/search/cancel/cancel_normal_button.png
         widget/search/cancel/search_cancel.edc
