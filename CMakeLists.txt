@@ -4,8 +4,7 @@ add_definitions(-DPROJECT_NAME=\"${PROJECT_NAME}\")
 
 add_definitions(-DDEFAULT_WIDTH=800)
 add_definitions(-DDEFAULT_HEIGHT=600)
-add_definitions(-DTHEME_BUILD_PATH=\"${CMAKE_BINARY_DIR}/data/themes\")
-
+add_definitions(-DTHEME_BUILD_PATH=\"${CMAKE_BINARY_DIR}/data/themes\") 
 set(EXEC_INSTALL_DIR "bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${EXEC_INSTALL_DIR})
 
@@ -41,6 +40,7 @@ endif ()
 message("Selected web backend is ${WEBKIT_BACKEND}")
 
 set(ELBOW_SOURCES
+    src/app.c
     src/browser.c
     src/main.c
     src/webview.c

@@ -21,7 +21,10 @@ win_delete_request_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info
 {
    Browser_Data *bd = data;
 
-   elm_exit();
+   application_remove_browser(bd->ad, bd);
+
+   evas_object_del(bd->win);
+   free(bd);
 }
 
 static void
