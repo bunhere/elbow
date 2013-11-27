@@ -236,7 +236,20 @@ _urlbar_activated(void *data, Evas_Object *entry, void *event_info)
    const char *markup_url = elm_entry_entry_get(entry);
    char *url = elm_entry_markup_to_utf8(markup_url);
 
-   webview_url_set(bd->active_webview, url);
+   if (strstr(url, "://") || !strcasecmp(url, "about:blank"))
+     {
+        // user may be written some scheme.
+        webview_url_set(bd->active_webview, url);
+     }
+   else
+     {
+        Eina_Strbuf *buf = eina_strbuf_new();
+        eina_strbuf_append_printf(buf, "http://%s", url);
+
+        char *url_with_scheme = eina_strbuf_string_steal(buf);
+        webview_url_set(bd->active_webview, url_with_scheme);
+        eina_strbuf_free(buf); 
+     }
 
    free(url);
 }
