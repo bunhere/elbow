@@ -43,6 +43,7 @@ color_classes {
 collections {
    group { name: "webkit/base";
       /* specific colors and all, used to listen for color_class changes */
+      data.item: "scrollbar.thickness" "15";
    }
 
 #include "widget/button/button.edc"

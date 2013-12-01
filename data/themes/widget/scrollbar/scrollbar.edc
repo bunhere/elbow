@@ -64,6 +64,7 @@ group { name: "scrollbar.vertical";
       /**** copied from elementary ****/
       part { name: "sb_vbar_show"; type: RECT;
          scale: 1;
+         repeat_events: 0;
          description { state: "default" 0.0;
             min: 15 0;
             max: 15 999999;
@@ -443,6 +444,7 @@ group { name: "scrollbar.horizontal";
       }
       part { name: "sb_hbar_show"; type: RECT;
          scale: 1;
+         repeat_events: 0;
          description { state: "default" 0.0;
             min: 0 15;
             max: 999999 15;
