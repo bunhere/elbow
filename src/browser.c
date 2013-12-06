@@ -14,6 +14,7 @@
 #endif
 
 static void _urlbar_activated(void *data, Evas_Object *entry, void *event_info);
+static void _urlbar_unfocused(void *data, Evas_Object *entry, void *event_info);
 static void _urlbar_filter_prepend(void *data, Evas_Object *entry, char **text);
 
 static void
@@ -169,6 +170,7 @@ browser_add(Application_Data *ad)
    evas_object_size_hint_weight_set(bd->urlbar.entry, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(bd->urlbar.entry, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_smart_callback_add(bd->urlbar.entry, "activated", _urlbar_activated, bd);
+   evas_object_smart_callback_add(bd->urlbar.entry, "unfocused", _urlbar_unfocused, bd);
    elm_box_pack_end(bd->urlbar.bar, bd->urlbar.entry);
    evas_object_show(bd->urlbar.entry);
 
@@ -255,6 +257,13 @@ _urlbar_activated(void *data, Evas_Object *entry, void *event_info)
      }
 
    free(url);
+}
+
+static void
+_urlbar_unfocused(void *data, Evas_Object *entry, void *event_info)
+{
+   Browser_Data *bd = data;
+   elm_entry_select_none(bd->urlbar.entry);
 }
 
 void

@@ -57,10 +57,19 @@ static Evas_Object *_ewk_window_create(Ewk_View_Smart_Data *sd, Eina_Bool javasc
 
 static Eina_Bool _ewk_key_down(Ewk_View_Smart_Data *sd, const Evas_Event_Key_Down *down)
 {
-//   if (!toCpp(sd)->smartKeyDown(down))
-//      return _parent_sc.key_down(sd, down);
+   return _parent_sc.key_down(sd, down);
 
-   return EINA_TRUE;
+}
+
+static Eina_Bool
+_mouse_down_cb(Ewk_View_Smart_Data *esd, const Evas_Event_Mouse_Down *ev)
+{
+   view_data *sd = (view_data *)esd;
+
+   elm_object_focus_set(sd->bd->win, EINA_FALSE);
+   evas_object_focus_set(esd->self, EINA_TRUE);
+
+   _parent_sc.mouse_down(esd, ev);
 }
 
 Evas_Object *webview_ewk_add(Evas_Object *parent, Browser_Data *bd)
@@ -80,6 +89,8 @@ Evas_Object *webview_ewk_add(Evas_Object *parent, Browser_Data *bd)
         api.window_create = _ewk_window_create;
         api.key_down = _ewk_key_down;
         
+        api.mouse_down = _mouse_down_cb;
+
         smart = evas_smart_class_new(&api.sc);
         if (!smart) return 0;
      }
