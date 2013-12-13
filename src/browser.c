@@ -279,6 +279,7 @@ void
 browser_urlbar_hide(Browser_Data *bd)
 {
    if (!bd->urlbar.activated) return;
+   if (bd->ad->alt_pressed) return;
 
    if (elm_object_focus_get(bd->urlbar.entry))
      {
