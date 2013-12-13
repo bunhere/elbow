@@ -42,4 +42,6 @@ void browser_urlbar_hide(Browser_Data *bd);
 void browser_urlbar_show(Browser_Data *bd);
 
 void browser_tab_add(Browser_Data *bd);
+
+void browser_multiplebar_hide(Browser_Data *bd);
 #endif // browser_h

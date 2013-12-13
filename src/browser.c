@@ -17,6 +17,16 @@ static void _urlbar_activated(void *data, Evas_Object *entry, void *event_info);
 static void _urlbar_unfocused(void *data, Evas_Object *entry, void *event_info);
 static void _urlbar_filter_prepend(void *data, Evas_Object *entry, char **text);
 
+static Eina_Bool
+_hide_menu_cb(void *data)
+{
+   Application_Data *ad = data;
+   browser_urlbar_hide(ad->active_browser);
+   browser_multiplebar_hide(ad->active_browser);
+
+   return ECORE_CALLBACK_CANCEL;
+}
+
 static void
 win_delete_request_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
@@ -88,6 +98,21 @@ _load_progress_cb(void *data, Evas_Object *o, void *event_info)
    double *progress = (double *)event_info;
    printf("%s %f\n", __func__, *progress);
    //TODO: needToImplement
+}
+
+static void
+_mouse_down_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_info)
+{
+   Browser_Data *bd = data;
+   Evas_Event_Mouse_Down *ev = event_info;
+
+   if (ev->button != 1)
+     browser_urlbar_show(bd);
+   else
+     {
+        //TODO: add timer to hide menubar/multiplebar
+        bd->ad->hide_timer = ecore_timer_add(0.3, _hide_menu_cb, bd->ad);
+     }
 }
 
 static void
@@ -205,6 +230,7 @@ browser_add(Application_Data *ad)
 
 #undef SMART_CALLBACK_ADD
 
+   evas_object_event_callback_add(bd->active_webview, EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, bd);
    //elm_object_text_set(bd->urlbar.entry, "about:blank");
 
    //FIXME: Just for test
