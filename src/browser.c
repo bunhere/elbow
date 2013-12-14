@@ -9,7 +9,7 @@
 #include "browser.h"
 #include "webview.h"
 
-#if defined(USE_EWEBKIT) || defined(USE_ELM_WEB)
+#if defined(USE_EWEBKIT)
 #include <EWebKit.h>
 #endif
 

@@ -13,9 +13,6 @@
 #include <EWebKit.h>
 #elif defined(USE_EWEBKIT2)
 #include <EWebKit2.h>
-#else
-//FIXME: elm_web can have EWebKit2 backend.
-#include <EWebKit.h>
 #endif
 
 static Eina_Bool
