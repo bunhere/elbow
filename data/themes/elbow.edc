@@ -7,11 +7,6 @@
 collections {
    group { name: "main_layout";
       parts {
-         part { name: "content";
-            type: SWALLOW;
-            description { state: "default" 0.0;
-            }
-         }
          // urlbar
          part { name: "urlbar.bg";
             type: RECT;
@@ -63,6 +58,14 @@ collections {
                fixed: 1 1;
                rel1.to: "multiplebar.bg";
                rel2.to: "multiplebar.bg";
+            }
+         }
+         part { name: "content";
+            type: SWALLOW;
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               rel1.to: "urlbar.bg";
+               rel1.relative: 0.0 1.0;
             }
          }
       }
