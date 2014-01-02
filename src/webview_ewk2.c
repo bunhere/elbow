@@ -95,7 +95,8 @@ _mouse_down_cb(Ewk_View_Smart_Data *esd, const Evas_Event_Mouse_Down *ev)
    _parent_sc.mouse_down(esd, ev);
 }
 
-Evas_Object *webview_ewk2_add(Evas_Object* parent, Browser_Data *bd)
+Evas_Object *
+webview_ewk_add(Evas_Object* parent, Browser_Data *bd)
 {
     static Evas_Smart *smart = 0;
     Evas *canvas = evas_object_evas_get(parent);

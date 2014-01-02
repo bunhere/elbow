@@ -44,6 +44,7 @@ set(ELBOW_SOURCES
     src/browser.c
     src/main.c
     src/webview.c
+    src/webview_elm.c
     src/webview_ewk.c
     src/webview_ewk2.c
 )

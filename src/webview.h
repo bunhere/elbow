@@ -10,6 +10,8 @@
 
 Evas_Object *webview_add(Browser_Data *bd);
 
+Evas_Object *webview_ewk_add(Evas_Object* parent, Browser_Data* bd);
+
 /*
  * Each backend have similar APIs but different name.
  */
@@ -23,7 +25,6 @@ Evas_Object *webview_add(Browser_Data *bd);
 #define webview_url_set               ewk_view_uri_set
 #define webview_user_agent_set        ewk_view_setting_user_agent_set
 
-Evas_Object *webview_ewk_add(Evas_Object* parent, Browser_Data* bd);
 #define webview_webkit_view_get(o)    (o)
 
 #elif defined(USE_EWEBKIT2)
@@ -36,7 +37,6 @@ Evas_Object *webview_ewk_add(Evas_Object* parent, Browser_Data* bd);
 #define webview_url_set               ewk_view_url_set
 #define webview_user_agent_set        ewk_view_user_agent_set
 
-Evas_Object *webview_ewk2_add(Evas_Object* parent, Browser_Data* bd);
 #define webview_webkit_view_get(o)    (o)
 
 #else

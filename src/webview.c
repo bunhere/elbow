@@ -17,13 +17,7 @@ webview_add(Browser_Data *bd)
 {
    Evas_Object *web;
 
-#if defined(USE_EWEBKIT)
    web = webview_ewk_add(bd->win, bd);
-#elif defined(USE_EWEBKIT2)
-   web = webview_ewk2_add(bd->win, bd);
-#else
-   web = elm_web_add(bd->win);
-#endif
 
    //FIXME : Check installation path(for release) with build directory(for development)
    ewk_view_theme_set(webview_webkit_view_get(web), THEME_BUILD_PATH "/webkit.edj");
