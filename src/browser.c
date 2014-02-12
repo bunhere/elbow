@@ -11,6 +11,12 @@
 
 #if defined(USE_EWEBKIT)
 #include <EWebKit.h>
+#elif defined(USE_ELM_WEB)
+#if defined(ELM_WEB)
+#include <EWebKit.h>
+#else
+#include <EWebKit2.h>
+#endif
 #endif
 
 static void _urlbar_activated(void *data, Evas_Object *entry, void *event_info);
@@ -143,7 +149,7 @@ _urlbar_button_add(Evas_Object *win, const char * const icon_name)
 }
 
 Browser_Data *
-browser_add(Application_Data *ad)
+browser_add(Application_Data *ad, const char *url)
 {
    Browser_Data *bd;
    Evas_Object *en;
@@ -233,8 +239,8 @@ browser_add(Application_Data *ad)
    evas_object_event_callback_add(bd->active_webview, EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, bd);
    //elm_object_text_set(bd->urlbar.entry, "about:blank");
 
-   //FIXME: Just for test
-   webview_url_set(bd->active_webview, "http://bunhere.tistory.com");
+   if (url)
+     webview_url_set(bd->active_webview, url);
 
    return bd;
 }

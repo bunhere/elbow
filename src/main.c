@@ -66,7 +66,7 @@ main_key_down_cb(void *data, int type EINA_UNUSED, void *ev)
                }
              else if (!strcmp(keyname, "n"))
                {  // Open new window.
-                  Browser_Data *bd = browser_add(ad);
+                  Browser_Data *bd = browser_add(ad, "about:blank");
                   evas_object_resize(bd->win, ad->default_width, ad->default_height);
                   evas_object_show(bd->win);
                   ad->active_browser = bd;
@@ -145,7 +145,7 @@ elm_main(int argc, char** argv)
    ecore_event_handler_add(ECORE_EVENT_KEY_DOWN, main_key_down_cb, &ad);
    ecore_event_handler_add(ECORE_EVENT_KEY_UP, main_key_up_cb, &ad);
 
-   bd = browser_add(&ad);
+   bd = browser_add(&ad, "http://bunhere.tistory.com");
    ad.active_browser = bd;
 
    evas_object_resize(bd->win, ad.default_width, ad.default_height);

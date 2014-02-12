@@ -33,6 +33,14 @@ else ()
     set(WEBKIT_BACKEND "elm_web")
     add_definitions(-DUSE_ELM_WEB=1)
 
+    #FIXME: It should be removed
+    include(FindPkgConfig)
+    pkg_check_modules(PKGS REQUIRED cairo libsoup-2.4)
+
+    foreach(flag ${PKGS_CFLAGS})
+        set(ELBOW_CFLAGS "${ELBOW_CFLAGS} ${flag}")
+    endforeach(flag)
+
     # How to detect whether elementary build with ewebkit or ewebkit2
     find_package(EWebKit REQUIRED)
 endif ()
@@ -69,6 +77,8 @@ set(ELBOW_LIBRARIES
 
 message("::: ${ELBOW_LIBRARIES}")
 add_subdirectory(data/themes)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ELBOW_CFLAGS}")
 
 add_executable(elbow ${ELBOW_SOURCES})
 include_directories(${ELBOW_INCLUDE_DIRS})
