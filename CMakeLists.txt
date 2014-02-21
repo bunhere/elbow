@@ -33,16 +33,13 @@ else ()
     set(WEBKIT_BACKEND "elm_web")
     add_definitions(-DUSE_ELM_WEB=1)
 
-    #FIXME: It should be removed
-    include(FindPkgConfig)
-    pkg_check_modules(PKGS REQUIRED cairo libsoup-2.4)
+    # FIXME: ElementaryConfig.cmake should provide this
+    if ("${USE_WEBKIT}" STREQUAL "ewebkit")
+        find_package(EWebKit REQUIRED)
+    else ()
+        find_package(EWebKit2 REQUIRED)
+    endif ()
 
-    foreach(flag ${PKGS_CFLAGS})
-        set(ELBOW_CFLAGS "${ELBOW_CFLAGS} ${flag}")
-    endforeach(flag)
-
-    # How to detect whether elementary build with ewebkit or ewebkit2
-    find_package(EWebKit REQUIRED)
 endif ()
 
 message("Selected web backend is ${WEBKIT_BACKEND}")
