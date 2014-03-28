@@ -175,7 +175,7 @@ browser_add(Application_Data *ad, const char *url)
    bd->urlbar.activated = EINA_FALSE;
    bd->urlbar.bar = elm_box_add(bd->win);
    elm_box_horizontal_set(bd->urlbar.bar, EINA_TRUE);
-   evas_object_size_hint_weight_set(bd->urlbar.bar, EVAS_HINT_EXPAND, 0.0);
+   evas_object_size_hint_weight_set(bd->urlbar.bar, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(bd->urlbar.bar, EVAS_HINT_FILL, 0.0);
    evas_object_show(bd->urlbar.bar);
 

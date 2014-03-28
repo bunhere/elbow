@@ -42,7 +42,7 @@ else ()
 
 endif ()
 
-message("Selected web backend is ${WEBKIT_BACKEND}")
+message("Selected web backend is ${WEBKIT_BACKEND}/${USE_WEBKIT}")
 
 set(ELBOW_SOURCES
     src/app.c

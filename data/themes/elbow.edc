@@ -4,25 +4,162 @@
  * License LGPL-3, see COPYING file at project folder.
  */
 
+#define TAB_LSPACER(_name, _toname) \
+   part { name: _name; \
+      type: SPACER; \
+      description { state: "default" 0.0; \
+         fixed: 1 0; \
+         rel1.to: _toname; \
+         rel2.to: _toname; \
+         rel1.relative: 0 0; \
+         rel2.relative: 0 1; \
+         min: 10 0; \
+      } \
+   }
+
 collections {
    group { name: "main_layout";
+      images {
+         image: "img/sym_close_dark_normal.png" COMP;
+         image: "img/sym_close_light_normal.png" COMP;
+         image: "img/sym_close_light_selected.png" COMP;
+         image: "img/sym_down_dark_normal.png" COMP;
+         image: "img/sym_down_light_normal.png" COMP;
+         image: "img/sym_down_light_selected.png" COMP;
+         image: "img/sym_left_dark_normal.png" COMP;
+         image: "img/sym_left_glow_normal.png" COMP;
+         image: "img/sym_left_light_normal.png" COMP;
+         image: "img/sym_left_light_normal.png" COMP;
+         image: "img/sym_plus_dark_normal.png" COMP;
+         image: "img/sym_plus_light_normal.png" COMP;
+         image: "img/sym_plus_light_selected.png" COMP;
+         image: "img/sym_right_dark_normal.png" COMP;
+         image: "img/sym_right_glow_normal.png" COMP;
+         image: "img/sym_right_light_normal.png" COMP;
+      }
+
       parts {
+         // tab bar
+         part { name: "tabbar";
+            type: RECT;
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               align: 1 0;
+               min: 0 25;
+               max: 999999 25;
+               rel1.relative: 0.0 0.0;
+               rel2.relative: 1.0 0.0;
+               color: 200 100 100 155;
+            }
+            description { state: "off" 0.0;
+               inherit: "default" 0.0;
+               align: 1 0;
+            }
+         }
+         part { name: "tab.left";
+            type: IMAGE;
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               align: 0 0.5;
+               min: 15 15;
+               max: 15 15;
+               rel1.to: "tabbar";
+               rel2.to: "tabbar";
+               rel1.relative: 0 0;
+               rel2.relative: 0 1;
+               image.normal: "img/sym_left_light_normal.png";
+            }
+         }
+         part { name: "tabbar.rpad";
+            type: SPACER;
+            description { state: "default" 0.0;
+               fixed: 1 0;
+               rel1.to: "tabbar";
+               rel2.to: "tabbar";
+               rel1.relative: 1 0;
+               rel2.relative: 1 1;
+               min: 10 0;
+            }
+         }
+         part { name: "tab.down";
+            type: IMAGE;
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               align: 1 0.5;
+               min: 15 15;
+               max: 15 15;
+               rel1.to: "tabbar.rpad";
+               rel2.to: "tabbar.rpad";
+               rel1.relative: 0 0;
+               rel2.relative: 0 1;
+               image.normal: "img/sym_down_light_normal.png";
+            }
+         }
+         TAB_LSPACER("tab.down.lspacer", "tab.down")
+         part { name: "tab.plus";
+            type: IMAGE;
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               align: 1 0.5;
+               min: 15 15;
+               max: 15 15;
+               rel1.to: "tab.down.lspacer";
+               rel2.to: "tab.down.lspacer";
+               rel1.relative: 0 0;
+               rel2.relative: 0 1;
+               image.normal: "img/sym_plus_light_normal.png";
+            }
+         }
+         TAB_LSPACER("tab.plus.lspacer", "tab.plus")
+         part { name: "tab.right";
+            type: IMAGE;
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               align: 1 0.5;
+               min: 15 15;
+               max: 15 15;
+               rel1.to: "tab.plus.lspacer";
+               rel2.to: "tab.plus.lspacer";
+               rel1.relative: 0 0;
+               rel2.relative: 0 1;
+               image.normal: "img/sym_right_light_normal.png";
+            }
+         }
+         TAB_LSPACER("tab.right.lspacer", "tab.right")
+         part { name: "tab.content.clipper";
+            type: RECT;
+            description {
+                fixed: 1 1;
+                rel1.to: "tab.left";
+                rel2.to: "tab.right.lspacer";
+                rel1.relative: 1 0;
+                rel2.relative: 0 1;
+                visible: 0;
+            }
+         }
+         part { name: "tab.content";
+            type: SWALLOW;
+            description {
+               
+            }
+         }
          // urlbar
          part { name: "urlbar.bg";
             type: RECT;
             description { state: "default" 0.0;
                fixed: 1 1;
-               align: 1 1;
+               align: 1 0;
                min: 0 44;
-               rel1.relative: 0.0 0.0;
-               rel2.relative: 1.0 0.0;
+               max: 999999 44;
+               rel1.to: "tabbar";
+               rel1.relative: 0.0 1.0;
+               rel2.to: "tabbar";
+               rel2.relative: 1.0 1.0;
                color: 100 100 100 155;
-               visible: 0;
             }
-            description { state: "on" 0.0;
+            description { state: "off" 0.0;
                inherit: "default" 0.0;
                align: 1 0;
-               visible: 1;
             }
          }
          part { name: "urlbar";
@@ -34,32 +171,6 @@ collections {
             }
          }
 
-         // multiplebar
-         part { name: "multiplebar.bg";
-            type: RECT;
-            description { state: "default" 0.0;
-               fixed: 1 1;
-               align: 1 0;
-               min: 0 100;
-               rel1.relative: 0.0 1.0;
-               rel2.relative: 1.0 1.0;
-               color: 100 100 100 155;
-               visible: 0;
-            }
-            description { state: "on" 0.0;
-               inherit: "default" 0.0;
-               align: 1 1;
-               visible: 1;
-            }
-         }
-         part { name: "multiplebar";
-            type: SWALLOW;
-            description { state: "default" 0.0;
-               fixed: 1 1;
-               rel1.to: "multiplebar.bg";
-               rel2.to: "multiplebar.bg";
-            }
-         }
          part { name: "content";
             type: SWALLOW;
             description { state: "default" 0.0;
@@ -81,18 +192,6 @@ collections {
             action: STATE_SET "default" 0.0;
             transition: LINEAR 0.2;
             target: "urlbar.bg";
-         }
-         program {
-            signal: "multiplebar,on";
-            action: STATE_SET "on" 0.0;
-            transition: LINEAR 0.2;
-            target: "multiplebar.bg";
-         }
-         program {
-            signal: "multiplebar,off";
-            action: STATE_SET "default" 0.0;
-            transition: LINEAR 0.2;
-            target: "multiplebar.bg";
          }
       }
    }

@@ -80,8 +80,8 @@ Evas_Object *webview_ewk_add(Evas_Object *parent, Browser_Data *bd)
    if (!smart)
      {
         static Ewk_View_Smart_Class api = EWK_VIEW_SMART_CLASS_INIT_NAME_VERSION("EWK_View_Demo");
-        ewk_view_single_smart_set(&api);
-        ewk_view_single_smart_set(&_parent_sc);
+        ewk_view_smart_set(&api);
+        ewk_view_smart_set(&_parent_sc);
         
         api.sc.add = _ewk_smart_add;
         api.sc.del = _ewk_smart_del;
