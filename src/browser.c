@@ -13,7 +13,6 @@
 #include <EWebKit.h>
 #elif defined(USE_ELM_WEB)
 #if defined(ELM_WEB)
-#error
 #include <EWebKit.h>
 #else
 #include <EWebKit2.h>
@@ -167,9 +166,8 @@ browser_add(Application_Data *ad, const char *url)
    evas_object_smart_callback_add(bd->win, "delete,request", win_delete_request_cb, bd);
 
    // layout
-   bd->layout = elm_box_add(bd->win);
-   evas_object_size_hint_weight_set(bd->layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   elm_box_horizontal_set(bd->layout, EINA_FALSE);
+   bd->layout = elm_layout_add(bd->win);
+   elm_layout_file_set(bd->layout, ad->main_layout_path, "main_layout");
    elm_win_resize_object_add(bd->win, bd->layout);
    evas_object_show(bd->layout);
 
@@ -179,7 +177,6 @@ browser_add(Application_Data *ad, const char *url)
    elm_box_horizontal_set(bd->urlbar.bar, EINA_TRUE);
    evas_object_size_hint_weight_set(bd->urlbar.bar, EVAS_HINT_EXPAND, 0.0);
    evas_object_size_hint_align_set(bd->urlbar.bar, EVAS_HINT_FILL, 0.0);
-   elm_box_pack_end(bd->layout, bd->urlbar.bar);
    evas_object_show(bd->urlbar.bar);
 
    // urlbar.back_button
@@ -201,7 +198,6 @@ browser_add(Application_Data *ad, const char *url)
    // urlbar.entry
    bd->urlbar.entry = elm_entry_add(bd->win);
    elm_entry_single_line_set(bd->urlbar.entry, EINA_TRUE);
-   elm_entry_scrollable_set(bd->urlbar.entry, EINA_TRUE);
    evas_object_size_hint_weight_set(bd->urlbar.entry, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(bd->urlbar.entry, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_smart_callback_add(bd->urlbar.entry, "activated", _urlbar_activated, bd);
@@ -209,15 +205,15 @@ browser_add(Application_Data *ad, const char *url)
    elm_box_pack_end(bd->urlbar.bar, bd->urlbar.entry);
    evas_object_show(bd->urlbar.entry);
 
+   elm_object_part_content_set(bd->layout, "urlbar", bd->urlbar.bar);
+
    // multi tab bar
    bd->multiplebar.activated = EINA_FALSE;
 
    // webview
    bd->active_webview = webview_add(bd);
-   evas_object_size_hint_weight_set(bd->active_webview, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-   evas_object_size_hint_align_set(bd->active_webview, EVAS_HINT_FILL, EVAS_HINT_FILL);
-   elm_box_pack_end(bd->layout, bd->active_webview);
    evas_object_show(bd->active_webview);
+   elm_object_part_content_set(bd->layout, "content", bd->active_webview);
    bd->webviews = eina_list_append(NULL, bd->active_webview);
 
 #define SMART_CALLBACK_ADD(signal, func) \
