@@ -217,7 +217,7 @@ browser_add(Application_Data *ad, const char *url)
    bd->webviews = eina_list_append(NULL, bd->active_webview);
 
 #define SMART_CALLBACK_ADD(signal, func) \
-       evas_object_smart_callback_add(bd->active_webview, signal, func, bd)
+       evas_object_smart_callback_add(EWKVIEW(bd->active_webview), signal, func, bd)
 
 #if defined(USE_WEBKIT2)
    SMART_CALLBACK_ADD("back,forward,list,changed", _back_forward_list_changed_cb);
