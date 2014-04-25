@@ -122,6 +122,12 @@ _mouse_down_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_in
 }
 
 static void
+script_execute_result_cb(Evas_Object *o, const char *value, void *data)
+{
+   printf("[%s]\n", value);
+}
+
+static void
 _load_finished_cb(void *data, Evas_Object *o, void *event_info)
 {
    Browser_Data *bd = data;
@@ -131,6 +137,10 @@ _load_finished_cb(void *data, Evas_Object *o, void *event_info)
 
 #if !defined(USE_EWEBKIT2)
    _back_forward_list_changed_cb(data, o, event_info);
+#endif
+
+#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+   ewk_view_script_execute(o, "var _wkrss = document.querySelector(\"link[type='application/rss+xml']\"); _wkrss ? _wkrss.href : \"\";", script_execute_result_cb, bd);
 #endif
 }
 
