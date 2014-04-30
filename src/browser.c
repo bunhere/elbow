@@ -144,6 +144,41 @@ _load_finished_cb(void *data, Evas_Object *o, void *event_info)
 #endif
 }
 
+static void
+_favicon_changed_cb(void *data, Evas_Object *o, void *event_info)
+{
+   printf("%s\n", __func__);
+#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+   printf(" -- %s: %s\n", __func__, ewk_view_url_get(o));
+   Evas_Object* favicon;
+   favicon = ewk_view_favicon_get(o);
+   if (favicon)
+     {
+        printf("Found favicon!\n");
+        evas_object_move(favicon, 0, 0);
+        evas_object_resize(favicon, 100, 100);
+        evas_object_show(favicon);
+     }
+   else
+     {
+        printf(" No Found favicon!\n");
+     }
+   favicon = ewk_favicon_database_icon_get(ewk_context_favicon_database_get(ewk_view_context_get(o)), ewk_view_url_get(o), evas_object_evas_get(o));
+   if (favicon)
+     {
+        printf("Found favicon!\n");
+        evas_object_move(favicon, 0, 0);
+        evas_object_resize(favicon, 100, 100);
+        evas_object_show(favicon);
+     }
+   else
+     {
+        printf(" No Found favicon!\n");
+     }
+
+#endif
+}
+
 static Evas_Object *
 _urlbar_button_add(Evas_Object *win, const char * const icon_name)
 {
@@ -243,6 +278,7 @@ browser_add(Application_Data *ad, const char *url)
    SMART_CALLBACK_ADD("load,error", _load_error_cb);
    SMART_CALLBACK_ADD("load,progress", _load_progress_cb);
    SMART_CALLBACK_ADD("load,finished", _load_finished_cb);
+   SMART_CALLBACK_ADD("favicon,changed", _favicon_changed_cb);
 
 #undef SMART_CALLBACK_ADD
 
