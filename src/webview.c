@@ -22,7 +22,7 @@ webview_add(Browser_Data *bd)
    //FIXME : Check installation path(for release) with build directory(for development)
    ewk_view_theme_set(EWKVIEW(web), THEME_BUILD_PATH "/webkit.edj");
 
-   webview_user_agent_set(web, MOBILE_USER_AGENT);
+   //webview_user_agent_set(web, MOBILE_USER_AGENT);
 
    return web;
 }

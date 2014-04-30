@@ -44,4 +44,8 @@ void browser_urlbar_show(Browser_Data *bd);
 void browser_tab_add(Browser_Data *bd);
 
 void browser_multiplebar_hide(Browser_Data *bd);
+
+Eina_Bool browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool alt, Eina_Bool shift);
+//void browser_keyup(Browser_Data *bd, void *ev);
+
 #endif // browser_h

@@ -381,3 +381,68 @@ browser_tab_add(Browser_Data *bd)
 {
    //TODO: needToImplement
 }
+
+Eina_Bool
+browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool alt, Eina_Bool shift)
+{
+   printf("-- %s\n", keyname);
+
+     if (ctrl && shift)
+       {
+       }
+     else if (ctrl)
+       {
+          if (*keyname == 'F')
+            {
+            }
+          else if (!strcmp(keyname, "b"))
+            {  // Back
+               webview_back(bd->active_webview);
+            }
+          else if (!strcmp(keyname, "f"))
+            {  // Forward
+               webview_forward(bd->active_webview);
+            }
+          else if (!strcmp(keyname, "n"))
+            {  // Open new window.
+               Application_Data *ad = bd->ad;
+               Browser_Data *new_bd = browser_add(bd->ad, "about:blank");
+               evas_object_resize(new_bd->win, ad->default_width, ad->default_height);
+               evas_object_show(bd->win);
+
+               // Change new active browser;
+               ad->active_browser = bd;
+
+               return ECORE_CALLBACK_DONE;
+            }
+          else if (!strcmp(keyname, "t"))
+            {  // Open new tab
+               browser_tab_add(bd);
+            }
+       }
+     else if (shift)
+       {
+       }
+     else if (alt)
+       {
+          if (!strcmp(keyname, "d"))
+            {
+               browser_urlbar_entry_focus_with_selection(bd);
+               return ECORE_CALLBACK_DONE;
+            }
+       }
+     else
+       {
+          if (*keyname == 'F')
+            {
+               switch(keyname[1] - '0')
+                 {
+                  case 5:
+                     webview_reload_bypass_cache(bd->active_webview);
+                     break;
+                 }
+            }
+       }
+
+   return ECORE_CALLBACK_PASS_ON;
+}
