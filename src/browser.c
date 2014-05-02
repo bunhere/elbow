@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2013 Ryuan Choi
- *
- * License LGPL-3, see COPYING file at project folder.
+ * Copyright (C) 2013-2014 Ryuan Choi
  */
 
 #include <Elementary.h>
@@ -147,35 +145,15 @@ _load_finished_cb(void *data, Evas_Object *o, void *event_info)
 static void
 _favicon_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
-   printf("%s\n", __func__);
 #if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
-   printf(" -- %s: %s\n", __func__, ewk_view_url_get(o));
    Evas_Object* favicon;
-   favicon = ewk_view_favicon_get(o);
-   if (favicon)
-     {
-        printf("Found favicon!\n");
-        evas_object_move(favicon, 0, 0);
-        evas_object_resize(favicon, 100, 100);
-        evas_object_show(favicon);
-     }
-   else
-     {
-        printf(" No Found favicon!\n");
-     }
    favicon = ewk_favicon_database_icon_get(ewk_context_favicon_database_get(ewk_view_context_get(o)), ewk_view_url_get(o), evas_object_evas_get(o));
    if (favicon)
      {
-        printf("Found favicon!\n");
         evas_object_move(favicon, 0, 0);
         evas_object_resize(favicon, 100, 100);
         evas_object_show(favicon);
      }
-   else
-     {
-        printf(" No Found favicon!\n");
-     }
-
 #endif
 }
 
