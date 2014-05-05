@@ -36,10 +36,7 @@ win_delete_request_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info
 {
    Browser_Data *bd = data;
 
-   application_remove_browser(bd->ad, bd);
-
-   evas_object_del(bd->win);
-   free(bd);
+   browser_del(bd);
 }
 
 static void
@@ -313,6 +310,15 @@ browser_add(Application_Data *ad, const char *url)
      webview_url_set(webview, url);
 
    return bd;
+}
+
+void
+browser_del(Browser_Data *bd)
+{
+   application_remove_browser(bd->ad, bd);
+
+   evas_object_del(bd->win);
+   free(bd);
 }
 
 void

@@ -1,7 +1,5 @@
 /*
  * Copyright (C) 2013 Ryuan Choi
- *
- * License LGPL-3, see COPYING file at project folder.
  */
 #include <Elementary.h>
 #include "app.h"

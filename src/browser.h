@@ -37,6 +37,7 @@ struct _Browser_Data
 typedef struct _Browser_Data Browser_Data;
 
 Browser_Data *browser_add(Application_Data *ad, const char *url);
+void browser_del(Browser_Data *bd);
 void browser_multiplebar_show(Browser_Data *bd);
 void browser_urlbar_entry_focus_with_selection(Browser_Data *bd);
 void browser_urlbar_hide(Browser_Data *bd);
