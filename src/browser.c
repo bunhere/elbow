@@ -46,6 +46,8 @@ static void
 _back_forward_list_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
    Browser_Data *bd = data;
+   if (bd->active_ewkview != o) return;
+
    elm_object_disabled_set(bd->urlbar.back_button, !webview_back_possible(o)); 
    elm_object_disabled_set(bd->urlbar.forward_button, !webview_forward_possible(o));
 }
@@ -68,6 +70,7 @@ static void
 _title_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
    Browser_Data *bd = data;
+   if (bd->active_ewkview != o) return;
 
    if (!event_info) return;
 
@@ -84,6 +87,7 @@ static void
 _url_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
    Browser_Data *bd = data;
+   if (bd->active_ewkview != o) return;
 
    printf("%s\n", __func__);
    elm_object_text_set(bd->urlbar.entry, event_info);
@@ -99,6 +103,9 @@ _load_error_cb(void *data, Evas_Object *o, void *event_info)
 static void
 _load_progress_cb(void *data, Evas_Object *o, void *event_info)
 {
+   Browser_Data *bd = data;
+   if (bd->active_ewkview != o) return;
+
    double *progress = (double *)event_info;
    printf("%s %f\n", __func__, *progress);
    //TODO: needToImplement
@@ -122,6 +129,9 @@ _mouse_down_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_in
 static void
 script_execute_result_cb(Evas_Object *o, const char *value, void *data)
 {
+   Browser_Data *bd = data;
+   if (bd->active_ewkview != o) return;
+
    printf("[%s]\n", value);
 }
 
@@ -129,6 +139,8 @@ static void
 _load_finished_cb(void *data, Evas_Object *o, void *event_info)
 {
    Browser_Data *bd = data;
+   if (bd->active_ewkview != o) return;
+
    elm_object_focus_set(bd->urlbar.entry, EINA_FALSE);
    webview_focus_set(bd->active_webview, EINA_TRUE);
    browser_urlbar_hide(bd);
@@ -155,6 +167,58 @@ _favicon_changed_cb(void *data, Evas_Object *o, void *event_info)
         evas_object_show(favicon);
      }
 #endif
+}
+
+static void
+_browser_callbacks_register(Browser_Data *bd, Evas_Object *webview)
+{
+#define SMART_CALLBACK_ADD(signal, func) \
+       evas_object_smart_callback_add(EWKVIEW(webview), signal, func, bd)
+
+#if defined(USE_WEBKIT2)
+   SMART_CALLBACK_ADD("back,forward,list,changed", _back_forward_list_changed_cb);
+#endif
+   SMART_CALLBACK_ADD("inspector,view,create", _inspector_create_cb);
+   SMART_CALLBACK_ADD("inspector,view,close", _inspector_close_cb);
+   SMART_CALLBACK_ADD("title,changed", _title_changed_cb);
+#if defined(USE_EWEBKIT)
+   SMART_CALLBACK_ADD("uri,changed", _url_changed_cb);
+#else
+   SMART_CALLBACK_ADD("url,changed", _url_changed_cb);
+#endif
+   SMART_CALLBACK_ADD("load,error", _load_error_cb);
+   SMART_CALLBACK_ADD("load,progress", _load_progress_cb);
+   SMART_CALLBACK_ADD("load,finished", _load_finished_cb);
+   SMART_CALLBACK_ADD("favicon,changed", _favicon_changed_cb);
+
+#undef SMART_CALLBACK_ADD
+
+   evas_object_event_callback_add(webview, EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, bd);
+}
+
+static void
+_browser_callbacks_deregister(Browser_Data *bd, Evas_Object *webview)
+{
+#define SMART_CALLBACK_DEL(signal, func) \
+       evas_object_smart_callback_del_full(EWKVIEW(webview), signal, func, bd)
+
+#if defined(USE_WEBKIT2)
+   SMART_CALLBACK_DEL("back,forward,list,changed", _back_forward_list_changed_cb);
+#endif
+   SMART_CALLBACK_DEL("inspector,view,create", _inspector_create_cb);
+   SMART_CALLBACK_DEL("inspector,view,close", _inspector_close_cb);
+   SMART_CALLBACK_DEL("title,changed", _title_changed_cb);
+#if defined(USE_EWEBKIT)
+   SMART_CALLBACK_DEL("uri,changed", _url_changed_cb);
+#else
+   SMART_CALLBACK_DEL("url,changed", _url_changed_cb);
+#endif
+   SMART_CALLBACK_DEL("load,error", _load_error_cb);
+   SMART_CALLBACK_DEL("load,progress", _load_progress_cb);
+   SMART_CALLBACK_DEL("load,finished", _load_finished_cb);
+   SMART_CALLBACK_DEL("favicon,changed", _favicon_changed_cb);
+
+#undef SMART_CALLBACK_ADD
 }
 
 static Evas_Object *
@@ -234,37 +298,19 @@ browser_add(Application_Data *ad, const char *url)
    bd->multiplebar.activated = EINA_FALSE;
 
    // webview
-   bd->active_webview = webview_add(bd);
-   evas_object_show(bd->active_webview);
-   elm_object_part_content_set(bd->layout, "content", bd->active_webview);
-   bd->webviews = eina_list_append(NULL, bd->active_webview);
+   Evas_Object *webview;
+   bd->active_webview = webview = webview_add(bd);
+   bd->active_ewkview = EWKVIEW(webview);
+   evas_object_show(webview);
+   elm_object_part_content_set(bd->layout, "content", webview);
+   bd->webviews = eina_list_append(NULL, webview);
 
-#define SMART_CALLBACK_ADD(signal, func) \
-       evas_object_smart_callback_add(EWKVIEW(bd->active_webview), signal, func, bd)
+   _browser_callbacks_register(bd, webview);
 
-#if defined(USE_WEBKIT2)
-   SMART_CALLBACK_ADD("back,forward,list,changed", _back_forward_list_changed_cb);
-#endif
-   SMART_CALLBACK_ADD("inspector,view,create", _inspector_create_cb);
-   SMART_CALLBACK_ADD("inspector,view,close", _inspector_close_cb);
-   SMART_CALLBACK_ADD("title,changed", _title_changed_cb);
-#if defined(USE_EWEBKIT)
-   SMART_CALLBACK_ADD("uri,changed", _url_changed_cb);
-#else
-   SMART_CALLBACK_ADD("url,changed", _url_changed_cb);
-#endif
-   SMART_CALLBACK_ADD("load,error", _load_error_cb);
-   SMART_CALLBACK_ADD("load,progress", _load_progress_cb);
-   SMART_CALLBACK_ADD("load,finished", _load_finished_cb);
-   SMART_CALLBACK_ADD("favicon,changed", _favicon_changed_cb);
-
-#undef SMART_CALLBACK_ADD
-
-   evas_object_event_callback_add(bd->active_webview, EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, bd);
    //elm_object_text_set(bd->urlbar.entry, "about:blank");
 
    if (url)
-     webview_url_set(bd->active_webview, url);
+     webview_url_set(webview, url);
 
    return bd;
 }
@@ -354,8 +400,27 @@ browser_urlbar_entry_focus_with_selection(Browser_Data *bd)
    elm_entry_select_all(bd->urlbar.entry);
 }
 
-void
-browser_tab_add(Browser_Data *bd)
+static void
+_browser_tab_add(Browser_Data *bd)
+{
+   printf("%s\n", __func__);
+
+   Evas_Object *new_web;
+   Evas_Object *old_web = bd->active_webview;
+   bd->active_webview = new_web = webview_add(bd);
+   bd->active_ewkview = EWKVIEW(new_web);
+   evas_object_show(new_web);
+   elm_object_part_content_set(bd->layout, "content", new_web);
+   evas_object_hide(old_web);
+
+   bd->webviews = eina_list_append(bd->webviews, new_web);
+   _browser_callbacks_register(bd, new_web);
+
+   webview_url_set(new_web, application_default_url(bd->ad));
+}
+
+static void
+_browser_tab_del(Browser_Data *bd, Evas_Object *webview)
 {
    //TODO: needToImplement
 }
@@ -395,7 +460,11 @@ browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool
             }
           else if (!strcmp(keyname, "t"))
             {  // Open new tab
-               browser_tab_add(bd);
+               _browser_tab_add(bd);
+            }
+          else if (!strcmp(keyname, "w"))
+            {  // Open new tab
+               _browser_tab_del(bd, bd->active_webview);
             }
        }
      else if (shift)

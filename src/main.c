@@ -22,15 +22,14 @@ main_key_down_cb(void *data, int type EINA_UNUSED, void *ev)
    Ecore_Event_Key *event = ev;
    const char *keyname = event->keyname;
 
-   Eina_Bool ctrl, alt, shift;
    if (!strcmp("Control_L", keyname))
-     ad->ctrl_pressed = ctrl = EINA_TRUE;
-   if (!strcmp("Shift_L", keyname))
-     ad->shift_pressed = shift = EINA_TRUE;
+     ad->ctrl_pressed = EINA_TRUE;
    if (!strcmp("Alt_L", keyname))
-     ad->alt_pressed = alt = EINA_TRUE;
+     ad->alt_pressed = EINA_TRUE;
+   if (!strcmp("Shift_L", keyname))
+     ad->shift_pressed = EINA_TRUE;
 
-   return browser_keydown(ad->active_browser, keyname, ctrl, alt, shift);
+   return browser_keydown(ad->active_browser, keyname, ad->ctrl_pressed, ad->alt_pressed, ad->shift_pressed);
 }
 
 static Eina_Bool
@@ -69,7 +68,7 @@ elm_main(int argc, char** argv)
    ecore_event_handler_add(ECORE_EVENT_KEY_DOWN, main_key_down_cb, &ad);
    ecore_event_handler_add(ECORE_EVENT_KEY_UP, main_key_up_cb, &ad);
 
-   bd = browser_add(&ad, "http://bunhere.tistory.com");
+   bd = browser_add(&ad, application_default_url(&ad));
    ad.active_browser = bd;
 
    evas_object_resize(bd->win, ad.default_width, ad.default_height);

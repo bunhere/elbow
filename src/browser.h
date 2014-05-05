@@ -16,6 +16,7 @@ struct _Browser_Data
    Application_Data *ad;
 
    Evas_Object *active_webview;
+   Evas_Object *active_ewkview; /* Just for easy access */
    Eina_List *webviews;
 
    struct {
@@ -40,8 +41,6 @@ void browser_multiplebar_show(Browser_Data *bd);
 void browser_urlbar_entry_focus_with_selection(Browser_Data *bd);
 void browser_urlbar_hide(Browser_Data *bd);
 void browser_urlbar_show(Browser_Data *bd);
-
-void browser_tab_add(Browser_Data *bd);
 
 void browser_multiplebar_hide(Browser_Data *bd);
 

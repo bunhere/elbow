@@ -14,3 +14,9 @@ application_remove_browser(Application_Data *ad, Browser_Data *bd)
    if (!ad->browsers)
      elm_exit();
 }
+
+const char *
+application_default_url(Application_Data *ad)
+{
+   return "http://bunhere.tistory.com";
+}

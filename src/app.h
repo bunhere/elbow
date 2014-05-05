@@ -27,5 +27,6 @@ struct _Application_Data
 typedef struct _Application_Data Application_Data;
 
 void application_remove_browser(Application_Data *ad, Browser_Data *bd);
+const char *application_default_url(Application_Data *ad);
 
 #endif // app_h
