@@ -1,12 +1,17 @@
 /*
  * Copyright (C) 2013 Ryuan Choi
- *
- * License LGPL-3, see COPYING file at project folder.
  */
 #ifndef browser_h
 #define browser_h
 
 typedef struct _Application_Data Application_Data;
+
+struct _Browser_Tab
+{
+   Evas_Object *webview;
+   Evas_Object *ewkview; /* Just for easy access */
+};
+typedef struct _Browser_Tab Browser_Tab;
 
 struct _Browser_Data
 {
@@ -15,9 +20,8 @@ struct _Browser_Data
 
    Application_Data *ad;
 
-   Evas_Object *active_webview;
-   Evas_Object *active_ewkview; /* Just for easy access */
-   Eina_List *webviews;
+   Browser_Tab *active_tab;
+   Eina_List *tabs;
 
    struct {
       Evas_Object *bar;

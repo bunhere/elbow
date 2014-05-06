@@ -21,6 +21,39 @@ static void _urlbar_activated(void *data, Evas_Object *entry, void *event_info);
 static void _urlbar_unfocused(void *data, Evas_Object *entry, void *event_info);
 static void _urlbar_filter_prepend(void *data, Evas_Object *entry, char **text);
 
+static void _browser_callbacks_register(Browser_Data *bd, Evas_Object *webview);
+static void _browser_callbacks_deregister(Browser_Data *bd, Evas_Object *webview);
+
+// TAB
+static Browser_Tab *
+_browser_tab_add(Browser_Data *bd)
+{
+   printf("%s\n", __func__);
+   Browser_Tab *new_tab;
+
+   new_tab = malloc(sizeof(Browser_Tab));
+   //new_tab->webview = NULL;
+   //new_tab->ewkview = NULL;
+
+   // webview
+   Evas_Object *webview;
+   new_tab->webview = webview = webview_add(bd);
+   new_tab->ewkview = EWKVIEW(webview);
+   evas_object_show(webview);
+
+   _browser_callbacks_register(bd, webview);
+
+   bd->tabs = eina_list_append(NULL, new_tab);
+
+   return new_tab;
+}
+
+static void
+_browser_tab_del(Browser_Data *bd, Evas_Object *webview)
+{
+   //TODO: needToImplement
+}
+
 static Eina_Bool
 _hide_menu_cb(void *data)
 {
@@ -43,7 +76,7 @@ static void
 _back_forward_list_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
    Browser_Data *bd = data;
-   if (bd->active_ewkview != o) return;
+   if (bd->active_tab->ewkview != o) return;
 
    elm_object_disabled_set(bd->urlbar.back_button, !webview_back_possible(o)); 
    elm_object_disabled_set(bd->urlbar.forward_button, !webview_forward_possible(o));
@@ -67,7 +100,7 @@ static void
 _title_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
    Browser_Data *bd = data;
-   if (bd->active_ewkview != o) return;
+   if (bd->active_tab->ewkview != o) return;
 
    if (!event_info) return;
 
@@ -84,7 +117,7 @@ static void
 _url_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
    Browser_Data *bd = data;
-   if (bd->active_ewkview != o) return;
+   if (bd->active_tab->ewkview != o) return;
 
    printf("%s\n", __func__);
    elm_object_text_set(bd->urlbar.entry, event_info);
@@ -101,7 +134,7 @@ static void
 _load_progress_cb(void *data, Evas_Object *o, void *event_info)
 {
    Browser_Data *bd = data;
-   if (bd->active_ewkview != o) return;
+   if (bd->active_tab->ewkview != o) return;
 
    double *progress = (double *)event_info;
    printf("%s %f\n", __func__, *progress);
@@ -127,7 +160,7 @@ static void
 script_execute_result_cb(Evas_Object *o, const char *value, void *data)
 {
    Browser_Data *bd = data;
-   if (bd->active_ewkview != o) return;
+   if (bd->active_tab->ewkview != o) return;
 
    printf("[%s]\n", value);
 }
@@ -136,10 +169,10 @@ static void
 _load_finished_cb(void *data, Evas_Object *o, void *event_info)
 {
    Browser_Data *bd = data;
-   if (bd->active_ewkview != o) return;
+   if (bd->active_tab->ewkview != o) return;
 
    elm_object_focus_set(bd->urlbar.entry, EINA_FALSE);
-   webview_focus_set(bd->active_webview, EINA_TRUE);
+   webview_focus_set(bd->active_tab->webview, EINA_TRUE);
    browser_urlbar_hide(bd);
 
 #if !defined(USE_EWEBKIT2)
@@ -291,23 +324,19 @@ browser_add(Application_Data *ad, const char *url)
 
    elm_object_part_content_set(bd->layout, "urlbar", bd->urlbar.bar);
 
+   // default tab
+   Browser_Tab *new_tab;
+   bd->active_tab = new_tab = _browser_tab_add(bd);
+
    // multi tab bar
    bd->multiplebar.activated = EINA_FALSE;
 
-   // webview
-   Evas_Object *webview;
-   bd->active_webview = webview = webview_add(bd);
-   bd->active_ewkview = EWKVIEW(webview);
-   evas_object_show(webview);
-   elm_object_part_content_set(bd->layout, "content", webview);
-   bd->webviews = eina_list_append(NULL, webview);
-
-   _browser_callbacks_register(bd, webview);
+   elm_object_part_content_set(bd->layout, "content", new_tab->webview);
 
    //elm_object_text_set(bd->urlbar.entry, "about:blank");
 
    if (url)
-     webview_url_set(webview, url);
+     webview_url_set(new_tab->webview, url);
 
    return bd;
 }
@@ -316,6 +345,12 @@ void
 browser_del(Browser_Data *bd)
 {
    application_remove_browser(bd->ad, bd);
+   void *it;
+
+   EINA_LIST_FREE(bd->tabs, it)
+     {
+         _browser_tab_del(bd, it);
+     }
 
    evas_object_del(bd->win);
    free(bd);
@@ -352,7 +387,7 @@ _urlbar_activated(void *data, Evas_Object *entry, void *event_info)
    if (strstr(url, "://") || !strcasecmp(url, "about:blank"))
      {
         // user may be written some scheme.
-        webview_url_set(bd->active_webview, url);
+        webview_url_set(bd->active_tab->webview, url);
      }
    else
      {
@@ -360,7 +395,7 @@ _urlbar_activated(void *data, Evas_Object *entry, void *event_info)
         eina_strbuf_append_printf(buf, "http://%s", url);
 
         char *url_with_scheme = eina_strbuf_string_steal(buf);
-        webview_url_set(bd->active_webview, url_with_scheme);
+        webview_url_set(bd->active_tab->webview, url_with_scheme);
         eina_strbuf_free(buf); 
      }
 
@@ -406,31 +441,6 @@ browser_urlbar_entry_focus_with_selection(Browser_Data *bd)
    elm_entry_select_all(bd->urlbar.entry);
 }
 
-static void
-_browser_tab_add(Browser_Data *bd)
-{
-   printf("%s\n", __func__);
-
-   Evas_Object *new_web;
-   Evas_Object *old_web = bd->active_webview;
-   bd->active_webview = new_web = webview_add(bd);
-   bd->active_ewkview = EWKVIEW(new_web);
-   evas_object_show(new_web);
-   elm_object_part_content_set(bd->layout, "content", new_web);
-   evas_object_hide(old_web);
-
-   bd->webviews = eina_list_append(bd->webviews, new_web);
-   _browser_callbacks_register(bd, new_web);
-
-   webview_url_set(new_web, application_default_url(bd->ad));
-}
-
-static void
-_browser_tab_del(Browser_Data *bd, Evas_Object *webview)
-{
-   //TODO: needToImplement
-}
-
 Eina_Bool
 browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool alt, Eina_Bool shift)
 {
@@ -446,11 +456,11 @@ browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool
             }
           else if (!strcmp(keyname, "b"))
             {  // Back
-               webview_back(bd->active_webview);
+               webview_back(bd->active_tab->webview);
             }
           else if (!strcmp(keyname, "f"))
             {  // Forward
-               webview_forward(bd->active_webview);
+               webview_forward(bd->active_tab->webview);
             }
           else if (!strcmp(keyname, "n"))
             {  // Open new window.
@@ -466,11 +476,16 @@ browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool
             }
           else if (!strcmp(keyname, "t"))
             {  // Open new tab
-               _browser_tab_add(bd);
+               Browser_Tab *new_tab;
+               bd->active_tab = new_tab = _browser_tab_add(bd);
+
+               elm_object_part_content_set(bd->layout, "content", new_tab->webview);
+
+               webview_url_set(new_tab->webview, application_default_url(bd->ad));
             }
           else if (!strcmp(keyname, "w"))
             {  // Open new tab
-               _browser_tab_del(bd, bd->active_webview);
+               _browser_tab_del(bd, bd->active_tab->webview);
             }
        }
      else if (shift)
@@ -491,7 +506,7 @@ browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool
                switch(keyname[1] - '0')
                  {
                   case 5:
-                     webview_reload_bypass_cache(bd->active_webview);
+                     webview_reload_bypass_cache(bd->active_tab->webview);
                      break;
                  }
             }

@@ -19,7 +19,8 @@ _new_window_hook(void *data, Evas_Object *obj, Eina_Bool js EINA_UNUSED, const E
    evas_object_resize(new_bd->win, bd->ad->default_width, bd->ad->default_height);
    evas_object_show(new_bd->win);
 
-   return new_bd->active_webview;
+   //FIXME: Do not use bd's member here
+   return new_bd->active_tab->webview;
 }
 
 Evas_Object *webview_ewk_add(Evas_Object *parent, Browser_Data *bd)
