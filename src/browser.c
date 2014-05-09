@@ -25,6 +25,8 @@ static void _browser_callbacks_register(Browser_Data *bd, Evas_Object *webview);
 static void _browser_callbacks_deregister(Browser_Data *bd, Evas_Object *webview);
 
 // TAB
+static void _browser_tab_active(Browser_Data *bd, Browser_Tab *active);
+
 static Browser_Tab *
 _browser_tab_add(Browser_Data *bd)
 {
@@ -39,19 +41,56 @@ _browser_tab_add(Browser_Data *bd)
    Evas_Object *webview;
    new_tab->webview = webview = webview_add(bd);
    new_tab->ewkview = EWKVIEW(webview);
-   evas_object_show(webview);
 
    _browser_callbacks_register(bd, webview);
 
-   bd->tabs = eina_list_append(NULL, new_tab);
+   bd->tabs = eina_list_append(bd->tabs, new_tab);
 
    return new_tab;
 }
 
 static void
-_browser_tab_del(Browser_Data *bd, Evas_Object *webview)
+_browser_tab_del(Browser_Data *bd, Browser_Tab *tab, Eina_Bool update_active)
 {
-   //TODO: needToImplement
+   printf("%s\n", __func__);
+    if (tab->webview)
+        evas_object_del(tab->webview);
+
+    Eina_List *l, *ltmp = NULL;
+    l = eina_list_data_find_list(bd->tabs, tab);
+
+    if (update_active)
+      {
+         if (l->next) ltmp = l->next;
+         else if (l->prev) ltmp = l->prev;
+
+         printf("%s (%p)\n", __func__, ltmp);
+         if (ltmp)
+           _browser_tab_active(bd, eina_list_data_get(ltmp));
+      }
+
+    bd->tabs = eina_list_remove_list(bd->tabs, l);
+
+    free(tab);
+}
+
+void
+_browser_tab_active(Browser_Data *bd, Browser_Tab *active)
+{
+   printf("%s\n", __func__);
+
+   if (bd->active_tab == active) return;
+   printf("%s.2\n", __func__);
+
+   Evas_Object *old;
+
+   bd->active_tab = active;
+
+   old = elm_object_part_content_get(bd->layout, "content");
+   if (old) evas_object_hide(old);
+
+   elm_object_part_content_set(bd->layout, "content", active->webview);
+   evas_object_show(active->webview);
 }
 
 static Eina_Bool
@@ -274,6 +313,8 @@ browser_add(Application_Data *ad, const char *url)
    bd = malloc(sizeof(Browser_Data));
    if (!bd) return NULL;
 
+   bd->tabs = NULL;
+
    bd->ad = ad;
    ad->browsers = eina_list_append(ad->browsers, bd);
 
@@ -326,12 +367,12 @@ browser_add(Application_Data *ad, const char *url)
 
    // default tab
    Browser_Tab *new_tab;
-   bd->active_tab = new_tab = _browser_tab_add(bd);
+   new_tab = _browser_tab_add(bd);
+
+   _browser_tab_active(bd, new_tab);
 
    // multi tab bar
    bd->multiplebar.activated = EINA_FALSE;
-
-   elm_object_part_content_set(bd->layout, "content", new_tab->webview);
 
    //elm_object_text_set(bd->urlbar.entry, "about:blank");
 
@@ -349,7 +390,7 @@ browser_del(Browser_Data *bd)
 
    EINA_LIST_FREE(bd->tabs, it)
      {
-         _browser_tab_del(bd, it);
+         _browser_tab_del(bd, it, EINA_FALSE);
      }
 
    evas_object_del(bd->win);
@@ -477,15 +518,14 @@ browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool
           else if (!strcmp(keyname, "t"))
             {  // Open new tab
                Browser_Tab *new_tab;
-               bd->active_tab = new_tab = _browser_tab_add(bd);
-
-               elm_object_part_content_set(bd->layout, "content", new_tab->webview);
+               new_tab = _browser_tab_add(bd);
+               _browser_tab_active(bd, new_tab);
 
                webview_url_set(new_tab->webview, application_default_url(bd->ad));
             }
           else if (!strcmp(keyname, "w"))
             {  // Open new tab
-               _browser_tab_del(bd, bd->active_tab->webview);
+               _browser_tab_del(bd, bd->active_tab, EINA_TRUE);
             }
        }
      else if (shift)
