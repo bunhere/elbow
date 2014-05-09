@@ -46,6 +46,7 @@ message("Selected web backend is ${WEBKIT_BACKEND}/${USE_WEBKIT}")
 
 set(ELBOW_SOURCES
     src/app.c
+    src/bookmark.c
     src/browser.c
     src/main.c
     src/webview.c
