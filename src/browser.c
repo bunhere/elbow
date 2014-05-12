@@ -443,6 +443,10 @@ _urlbar_activated(void *data, Evas_Object *entry, void *event_info)
         eina_strbuf_free(buf); 
      }
 
+   elm_object_focus_set(bd->urlbar.entry, EINA_FALSE);
+   webview_focus_set(bd->active_tab->webview, EINA_TRUE);
+   bd->user_focused = EINA_FALSE;
+
    free(url);
 }
 
@@ -490,7 +494,7 @@ browser_urlbar_entry_focus_with_selection(Browser_Data *bd)
 Eina_Bool
 browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool alt, Eina_Bool shift)
 {
-   printf("-- %s\n", keyname);
+   printf("-- (%p)%s\n", bd, keyname);
 
      if (ctrl && shift)
        {
@@ -511,12 +515,12 @@ browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool
           else if (!strcmp(keyname, "n"))
             {  // Open new window.
                Application_Data *ad = bd->ad;
-               Browser_Data *new_bd = browser_add(bd->ad, "about:blank");
+               Browser_Data *new_bd = browser_add(ad, "about:blank");
                evas_object_resize(new_bd->win, ad->default_width, ad->default_height);
-               evas_object_show(bd->win);
+               evas_object_show(new_bd->win);
 
                // Change new active browser;
-               ad->active_browser = bd;
+               ad->active_browser = new_bd;
 
                return ECORE_CALLBACK_DONE;
             }
