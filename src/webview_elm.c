@@ -6,13 +6,13 @@
 #include <Elementary.h>
 #include "app.h"
 #include "browser.h"
+#include "log.h"
 
 static Evas_Object *
 _new_window_hook(void *data, Evas_Object *obj, Eina_Bool js EINA_UNUSED, const Elm_Web_Window_Features *wf EINA_UNUSED)
 {
+   BROWSER_CALL_LOG("");
    Browser_Data *bd = data;
-
-   fprintf(stderr, "%s\n", __func__);
 
    //TODO: Check some setting to add new webview as a tab
    Browser_Data *new_bd = browser_add(bd->ad, NULL);

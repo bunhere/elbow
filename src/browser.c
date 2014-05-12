@@ -5,6 +5,7 @@
 #include <Elementary.h>
 #include "app.h"
 #include "browser.h"
+#include "log.h"
 #include "webview.h"
 
 #if defined(USE_EWEBKIT)
@@ -30,7 +31,7 @@ static void _browser_tab_active(Browser_Data *bd, Browser_Tab *active);
 static Browser_Tab *
 _browser_tab_add(Browser_Data *bd)
 {
-   printf("%s\n", __func__);
+   BROWSER_CALL_LOG("");
    Browser_Tab *new_tab;
 
    new_tab = malloc(sizeof(Browser_Tab));
@@ -52,7 +53,7 @@ _browser_tab_add(Browser_Data *bd)
 static void
 _browser_tab_del(Browser_Data *bd, Browser_Tab *tab, Eina_Bool update_active)
 {
-   printf("%s\n", __func__);
+   BROWSER_CALL_LOG("");
     if (tab->webview)
         evas_object_del(tab->webview);
 
@@ -64,7 +65,6 @@ _browser_tab_del(Browser_Data *bd, Browser_Tab *tab, Eina_Bool update_active)
          if (l->next) ltmp = l->next;
          else if (l->prev) ltmp = l->prev;
 
-         printf("%s (%p)\n", __func__, ltmp);
          if (ltmp)
            _browser_tab_active(bd, eina_list_data_get(ltmp));
       }
@@ -77,10 +77,9 @@ _browser_tab_del(Browser_Data *bd, Browser_Tab *tab, Eina_Bool update_active)
 void
 _browser_tab_active(Browser_Data *bd, Browser_Tab *active)
 {
-   printf("%s\n", __func__);
+   BROWSER_CALL_LOG("");
 
    if (bd->active_tab == active) return;
-   printf("%s.2\n", __func__);
 
    Evas_Object *old;
 
@@ -96,6 +95,8 @@ _browser_tab_active(Browser_Data *bd, Browser_Tab *active)
 static Eina_Bool
 _hide_menu_cb(void *data)
 {
+   BROWSER_CALL_LOG("");
+
    Application_Data *ad = data;
    browser_urlbar_hide(ad->active_browser);
    browser_multiplebar_hide(ad->active_browser);
@@ -124,14 +125,14 @@ _back_forward_list_changed_cb(void *data, Evas_Object *o, void *event_info)
 static void
 _inspector_create_cb(void *userData, Evas_Object *o, void *eventInfo)
 {
-   printf("%s\n", __func__);
+   BROWSER_CALL_LOG("");
    //TODO: needToImplement
 }
 
 static void
 _inspector_close_cb(void *userData, Evas_Object *o, void *eventInfo)
 {
-   printf("%s\n", __func__);
+   BROWSER_CALL_LOG("");
    //TODO: needToImplement
 }
 
@@ -155,10 +156,11 @@ _title_changed_cb(void *data, Evas_Object *o, void *event_info)
 static void
 _url_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
+   BROWSER_CALL_LOG("");
+
    Browser_Data *bd = data;
    if (bd->active_tab->ewkview != o) return;
 
-   printf("%s\n", __func__);
    elm_object_text_set(bd->urlbar.entry, event_info);
    bd->user_focused = EINA_FALSE;
 }
@@ -166,18 +168,19 @@ _url_changed_cb(void *data, Evas_Object *o, void *event_info)
 static void
 _load_error_cb(void *data, Evas_Object *o, void *event_info)
 {
-   printf("%s\n", __func__);
+   BROWSER_CALL_LOG("");
    //TODO: needToImplement
 }
 
 static void
 _load_progress_cb(void *data, Evas_Object *o, void *event_info)
 {
+   BROWSER_CALL_LOG("");
+
    Browser_Data *bd = data;
    if (bd->active_tab->ewkview != o) return;
 
-   double *progress = (double *)event_info;
-   printf("%s %f\n", __func__, *progress);
+   //double *progress = (double *)event_info;
    //TODO: needToImplement
 }
 
@@ -199,10 +202,12 @@ _mouse_down_cb(void *data, Evas *e EINA_UNUSED, Evas_Object *obj, void *event_in
 static void
 script_execute_result_cb(Evas_Object *o, const char *value, void *data)
 {
+   BROWSER_CALL_LOG("");
+
    Browser_Data *bd = data;
    if (bd->active_tab->ewkview != o) return;
 
-   printf("[%s]\n", value);
+   BROWSER_LOGD("[%s]", value);
 }
 
 static void
@@ -494,7 +499,9 @@ browser_urlbar_entry_focus_with_selection(Browser_Data *bd)
 Eina_Bool
 browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool alt, Eina_Bool shift)
 {
-   printf("-- (%p)%s\n", bd, keyname);
+   BROWSER_CALL_LOG("");
+
+   BROWSER_LOGD("-- (%p)%s\n", bd, keyname);
 
      if (ctrl && shift)
        {

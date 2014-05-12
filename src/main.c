@@ -1,12 +1,11 @@
 /*
  * Copyright (C) 2013 Ryuan Choi
- *
- * License LGPL-3, see COPYING file at project folder.
  */
 
 #include <Elementary.h>
 #include "app.h"
 #include "browser.h"
+#include "log.h"
 #include "webview.h"
 
 #if defined(USE_EWEBKIT)
@@ -53,6 +52,7 @@ main_key_up_cb(void *data, int type EINA_UNUSED, void *ev)
 EAPI_MAIN int
 elm_main(int argc, char** argv)
 {
+   BROWSER_LOGD("%s", "h");
    Browser_Data *bd;
    Application_Data ad;
 
