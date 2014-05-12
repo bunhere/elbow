@@ -160,6 +160,7 @@ _url_changed_cb(void *data, Evas_Object *o, void *event_info)
 
    printf("%s\n", __func__);
    elm_object_text_set(bd->urlbar.entry, event_info);
+   bd->user_focused = EINA_FALSE;
 }
 
 static void
@@ -210,9 +211,11 @@ _load_finished_cb(void *data, Evas_Object *o, void *event_info)
    Browser_Data *bd = data;
    if (bd->active_tab->ewkview != o) return;
 
-   elm_object_focus_set(bd->urlbar.entry, EINA_FALSE);
-   webview_focus_set(bd->active_tab->webview, EINA_TRUE);
-   browser_urlbar_hide(bd);
+   if (!bd->user_focused)
+     {
+        elm_object_focus_set(bd->urlbar.entry, EINA_FALSE);
+        webview_focus_set(bd->active_tab->webview, EINA_TRUE);
+     }
 
 #if !defined(USE_EWEBKIT2)
    _back_forward_list_changed_cb(data, o, event_info);
@@ -480,6 +483,8 @@ browser_urlbar_entry_focus_with_selection(Browser_Data *bd)
 {
    elm_object_focus_set(bd->urlbar.entry, EINA_TRUE);
    elm_entry_select_all(bd->urlbar.entry);
+
+   bd->user_focused = EINA_TRUE;
 }
 
 Eina_Bool

@@ -37,6 +37,8 @@ struct _Browser_Data
       Evas_Object *bar;
       Eina_Bool activated;
    } multiplebar;
+
+   Eina_Bool user_focused;
 };
 typedef struct _Browser_Data Browser_Data;
 
