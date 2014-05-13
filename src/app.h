@@ -6,6 +6,9 @@
 #ifndef app_h
 #define app_h
 
+#include <Eina.h>
+#include <Ecore.h>
+
 typedef struct _Browser_Data Browser_Data;
 
 struct _Application_Data

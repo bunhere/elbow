@@ -4,12 +4,15 @@
 #ifndef browser_h
 #define browser_h
 
+#include <Evas.h>
+
 typedef struct _Application_Data Application_Data;
 
 struct _Browser_Tab
 {
    Evas_Object *webview;
    Evas_Object *ewkview; /* Just for easy access */
+   Evas_Object *homescreen;
 };
 typedef struct _Browser_Tab Browser_Tab;
 

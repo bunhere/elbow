@@ -25,6 +25,9 @@ Evas_Object *webview_ewk_add(Evas_Object* parent, Browser_Data* bd);
 #define webview_url_set               ewk_view_uri_set
 #define webview_user_agent_set        ewk_view_setting_user_agent_set
 
+#define WEBVIEW_TITLE                 ewk_view_title_get
+#define WEBVIEW_URL                   ewk_view_url_get
+
 #define EWKVIEW(o)    (o)
 
 #elif defined(USE_EWEBKIT2)
@@ -37,6 +40,9 @@ Evas_Object *webview_ewk_add(Evas_Object* parent, Browser_Data* bd);
 #define webview_url_set               ewk_view_url_set
 #define webview_user_agent_set        ewk_view_user_agent_set
 
+#define WEBVIEW_TITLE                 ewk_view_title_get
+#define WEBVIEW_URL                   ewk_view_url_get
+
 #define EWKVIEW(o)    (o)
 
 #else
@@ -48,6 +54,9 @@ Evas_Object *webview_ewk_add(Evas_Object* parent, Browser_Data* bd);
 #define webview_reload_bypass_cache   elm_web_reload_full
 #define webview_url_set               elm_web_url_set
 #define webview_user_agent_set        elm_web_useragent_set
+
+#define WEBVIEW_TITLE                 elm_web_title_get
+#define WEBVIEW_URL                   elm_web_url_get
 
 #define EWKVIEW(o)    (elm_web_webkit_view_get(o))
 

@@ -50,6 +50,7 @@ set(ELBOW_SOURCES
     src/app.c
     src/bookmark.c
     src/browser.c
+    src/homescreen.c
     src/main.c
     src/webview.c
     src/webview_elm.c
