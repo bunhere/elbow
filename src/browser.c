@@ -243,10 +243,8 @@ _progress_update(Browser_Data* bd, float progress)
 static void
 _load_progress_cb(void *data, Evas_Object *o, void *event_info)
 {
-   BROWSER_CALL_LOG("");
-
    Browser_Data *bd = data;
-   if (bd->active_tab->ewkview != o) return;
+   if (!bd->active_tab || bd->active_tab->ewkview != o) return;
 
    _progress_update(bd, *((double *)event_info));
 }
