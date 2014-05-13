@@ -2,6 +2,7 @@
  * Copyright (C) 2013-2014 Ryuan Choi
  */
 
+#include <Edje.h>
 #include <Elementary.h>
 #include "app.h"
 #include "browser.h"
@@ -172,6 +173,22 @@ _load_error_cb(void *data, Evas_Object *o, void *event_info)
    //TODO: needToImplement
 }
 
+typedef struct {
+    Edje_Message_Float_Set set;
+    double val;
+} _Progress;
+
+static void
+_progress_update(Browser_Data* bd, float progress)
+{
+   _Progress progress_msg;
+   Edje_Message_Float_Set *msg = (Edje_Message_Float_Set*)&progress_msg;
+   msg->count = 1;
+   msg->val[0] = progress;
+
+   edje_object_message_send(elm_layout_edje_get(bd->layout), EDJE_MESSAGE_FLOAT_SET, 0, msg);
+}
+
 static void
 _load_progress_cb(void *data, Evas_Object *o, void *event_info)
 {
@@ -180,8 +197,7 @@ _load_progress_cb(void *data, Evas_Object *o, void *event_info)
    Browser_Data *bd = data;
    if (bd->active_tab->ewkview != o) return;
 
-   //double *progress = (double *)event_info;
-   //TODO: needToImplement
+   _progress_update(bd, *((double *)event_info));
 }
 
 static void
@@ -221,6 +237,8 @@ _load_finished_cb(void *data, Evas_Object *o, void *event_info)
         elm_object_focus_set(bd->urlbar.entry, EINA_FALSE);
         webview_focus_set(bd->active_tab->webview, EINA_TRUE);
      }
+
+   _progress_update(bd, 0);
 
 #if !defined(USE_EWEBKIT2)
    _back_forward_list_changed_cb(data, o, event_info);

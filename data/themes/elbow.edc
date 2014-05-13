@@ -1,7 +1,5 @@
 /*
- * Copyright (C) 2013 Ryuan Choi
- *
- * License LGPL-3, see COPYING file at project folder.
+ * Copyright (C) 2013-2014 Ryuan Choi
  */
 
 #define TAB_LSPACER(_name, _toname) \
@@ -19,6 +17,18 @@
 
 collections {
    group { name: "main_layout";
+      script {
+         public message(Msg_Type:type, id, ...) {
+            if ((id == 0) && (type == MSG_FLOAT_SET)) {
+               new Float:x;
+               x = getfarg(2);
+
+               if (x >= 0.0) {
+                  set_drag_size(PART:"progress", x, 1.0);
+               }
+            }
+         }
+      }
       images {
          image: "img/sym_close_dark_normal.png" COMP;
          image: "img/sym_close_light_normal.png" COMP;
@@ -177,6 +187,35 @@ collections {
                fixed: 1 1;
                rel1.to: "urlbar.bg";
                rel1.relative: 0.0 1.0;
+            }
+         }
+
+         //progress
+         part { name: "progress.bg";
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               min: 0 4;
+               align: 0 0;
+               rel1.to: "urlbar.bg";
+               rel2.to: "urlbar.bg";
+               rel1.relative: 0.0 1.0;
+               rel2.relative: 1.0 1.0;
+               color: 130 130 130 100;
+            }
+         }
+         part { name: "progress";
+            type: RECT;
+            mouse_events: 0;
+            dragable {
+               x: 1 1 0;
+               y: 0 0 0;
+               confine: "progress.bg";
+            }
+            description { state: "default" 0.0;
+               fixed: 1 1;
+               rel1.to: "progress.bg";
+               rel2.to: "progress.bg";
+               color: 130 130 255 255;
             }
          }
       }
