@@ -24,8 +24,13 @@ static void _urlbar_activated(void *data, Evas_Object *entry, void *event_info);
 static void _urlbar_unfocused(void *data, Evas_Object *entry, void *event_info);
 static void _urlbar_filter_prepend(void *data, Evas_Object *entry, char **text);
 
+static void _browser_focus_in(void *data, Evas *e, Evas_Object *obj, void *event_info);
+static void _browser_focus_out(void *data, Evas *e, Evas_Object *obj, void *event_info);
+
 static void _browser_callbacks_register(Browser_Data *bd, Evas_Object *webview);
 static void _browser_callbacks_deregister(Browser_Data *bd, Evas_Object *webview);
+
+static void _progress_update(Browser_Data* bd, float progress);
 
 // TAB
 static void _browser_tab_active(Browser_Data *bd, Browser_Tab *active);
@@ -64,6 +69,8 @@ _browser_tab_add(Browser_Data *bd, const char *url)
         new_tab->homescreen = homescreen = home_screen_add(bd);
      }
 
+   _progress_update(bd, 0);
+
    bd->tabs = eina_list_append(bd->tabs, new_tab);
 
    return new_tab;
@@ -75,6 +82,8 @@ _browser_tab_del(Browser_Data *bd, Browser_Tab *tab, Eina_Bool update_active)
    BROWSER_CALL_LOG("");
     if (tab->webview)
         evas_object_del(tab->webview);
+    if (tab->homescreen)
+        evas_object_del(tab->homescreen);
 
     Eina_List *l, *ltmp = NULL;
     l = eina_list_data_find_list(bd->tabs, tab);
@@ -91,6 +100,9 @@ _browser_tab_del(Browser_Data *bd, Browser_Tab *tab, Eina_Bool update_active)
     bd->tabs = eina_list_remove_list(bd->tabs, l);
 
     free(tab);
+
+    if (!bd->tabs)
+        browser_del(bd);
 }
 
 void
@@ -118,7 +130,7 @@ _browser_tab_active(Browser_Data *bd, Browser_Tab *active)
 
    bd->active_tab = active;
 
-   old = elm_object_part_content_get(bd->layout, "content");
+   old = elm_object_part_content_unset(bd->layout, "content");
    if (old) evas_object_hide(old);
 
    elm_object_part_content_set(bd->layout, "content", tab_content);
@@ -399,6 +411,9 @@ browser_add(Application_Data *ad, const char *url)
    elm_win_focus_highlight_enabled_set(bd->win, EINA_TRUE);
    evas_object_smart_callback_add(bd->win, "delete,request", win_delete_request_cb, bd);
 
+   evas_object_event_callback_add(bd->win, EVAS_CALLBACK_FOCUS_IN, _browser_focus_in, bd);
+   evas_object_event_callback_add(bd->win, EVAS_CALLBACK_FOCUS_OUT, _browser_focus_out, bd);
+
    // layout
    bd->layout = elm_layout_add(bd->win);
    elm_layout_file_set(bd->layout, ad->main_layout_path, "main_layout");
@@ -527,6 +542,21 @@ _urlbar_unfocused(void *data, Evas_Object *entry, void *event_info)
    elm_entry_select_none(bd->urlbar.entry);
 }
 
+static void
+_browser_focus_in(void *data, Evas *e, Evas_Object *obj, void *event_info)
+{
+   BROWSER_CALL_LOG("%p", obj);
+   Browser_Data *bd = data;
+   if (bd->ad->active_browser == bd) return;
+   bd->ad->active_browser = bd;
+}
+
+static void
+_browser_focus_out(void *data, Evas *e, Evas_Object *obj, void *event_info)
+{
+   BROWSER_CALL_LOG("%p", obj);
+}
+
 void
 browser_urlbar_show(Browser_Data *bd)
 {
@@ -601,6 +631,8 @@ browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool
                Browser_Tab *new_tab;
                new_tab = _browser_tab_add(bd, NULL);
                _browser_tab_active(bd, new_tab);
+
+               return ECORE_CALLBACK_DONE;
             }
           else if (!strcmp(keyname, "w"))
             {  // Open new tab
