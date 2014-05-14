@@ -120,12 +120,14 @@ _browser_tab_active(Browser_Data *bd, Browser_Tab *active)
         tab_content = active->webview;
         elm_object_text_set(bd->urlbar.entry, WEBVIEW_URL(tab_content));
         elm_win_title_set(bd->win, WEBVIEW_TITLE(tab_content));
+        _progress_update(bd, 0); //FIXME update as current progress
      }
    else
      {
         tab_content = active->homescreen;
         elm_object_text_set(bd->urlbar.entry, "about:home");
         elm_win_title_set(bd->win, PROJECT_NAME);
+        _progress_update(bd, 0);
      }
 
    bd->active_tab = active;
@@ -154,6 +156,30 @@ _browser_tab_url_set(Browser_Tab *tab, Browser_Data *bd, const char *url)
      }
 
    webview_url_set(tab->webview, url);
+}
+
+static void
+_browser_tab_next(Browser_Tab *tab, Browser_Data *bd)
+{
+    Eina_List *l, *ltmp = NULL;
+    l = eina_list_data_find_list(bd->tabs, tab);
+
+    ltmp = l->next;
+    if (!ltmp) ltmp = bd->tabs;
+
+    _browser_tab_active(bd, eina_list_data_get(ltmp));
+}
+
+static void
+_browser_tab_previous(Browser_Tab *tab, Browser_Data *bd)
+{
+    Eina_List *l, *ltmp = NULL;
+    l = eina_list_data_find_list(bd->tabs, tab);
+
+    ltmp = l->prev;
+    if (!ltmp) ltmp = eina_list_last(bd->tabs);
+
+    _browser_tab_active(bd, eina_list_data_get(ltmp));
 }
 
 static Eina_Bool
@@ -604,6 +630,10 @@ browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool
 
      if (ctrl && shift)
        {
+          if (!strcmp(keyname, "Tab"))
+            {
+               _browser_tab_previous(bd->active_tab, bd);
+            }
        }
      else if (ctrl)
        {
@@ -641,6 +671,10 @@ browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool
           else if (!strcmp(keyname, "w"))
             {  // Open new tab
                _browser_tab_del(bd, bd->active_tab, EINA_TRUE);
+            }
+          else if (!strcmp(keyname, "Tab"))
+            {
+               _browser_tab_next(bd->active_tab, bd);
             }
        }
      else if (shift)
