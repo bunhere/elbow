@@ -42,6 +42,7 @@ struct _Browser_Data
    } multiplebar;
 
    Eina_Bool user_focused;
+   Eina_Bool destroyed;
 };
 typedef struct _Browser_Data Browser_Data;
 

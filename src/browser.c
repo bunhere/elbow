@@ -402,6 +402,7 @@ browser_add(Application_Data *ad, const char *url)
 
    bd->tabs = NULL;
    bd->active_tab = NULL;
+   bd->destroyed = EINA_FALSE;
 
    bd->ad = ad;
    ad->browsers = eina_list_append(ad->browsers, bd);
@@ -473,6 +474,9 @@ browser_add(Application_Data *ad, const char *url)
 void
 browser_del(Browser_Data *bd)
 {
+   if (bd->destroyed) return;
+   bd->destroyed = EINA_TRUE;
+
    application_remove_browser(bd->ad, bd);
    void *it;
 
