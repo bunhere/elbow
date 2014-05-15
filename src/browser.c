@@ -234,7 +234,7 @@ _auth_cancel(void *data, Evas_Object *obj, void *event_info)
 }
 
 static void
-_auth_ok(void *data, Evas_Object *obj, void *event_info)
+_auth_ok(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
     Popup_Data *popup_data = (Popup_Data *)data;
     Ewk_Auth_Request *request = (Ewk_Auth_Request *)popup_data->data;
@@ -246,6 +246,12 @@ _auth_ok(void *data, Evas_Object *obj, void *event_info)
 
     evas_object_del(popup_data->popup);
     free(popup_data);
+}
+
+static void
+_auth_entry_activated_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   _auth_ok(data, NULL, NULL);
 }
 
 static void
@@ -309,7 +315,8 @@ _authentication_request_cb(void *data, Evas_Object *o, void *event_info)
    popup_data->entry = entry = elm_entry_add(popup);
    elm_entry_scrollable_set(entry, EINA_TRUE);
    elm_entry_single_line_set(entry, EINA_TRUE);
-   elm_entry_text_style_user_push(entry, "DEFAULT='font_size=18'");
+   evas_object_smart_callback_add(entry, "activated", _auth_ok, popup_data);
+   evas_object_smart_callback_add(entry, "aborted", _auth_cancel, popup_data);
    const char *suggested_username = ewk_auth_request_suggested_username_get(request);
    elm_entry_entry_set(entry, suggested_username ? suggested_username : "");
    evas_object_size_hint_weight_set(entry, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -330,7 +337,8 @@ _authentication_request_cb(void *data, Evas_Object *o, void *event_info)
    elm_entry_scrollable_set(pwd, EINA_TRUE);
    elm_entry_single_line_set(pwd, EINA_TRUE);
    elm_entry_password_set(pwd, EINA_TRUE);
-   elm_entry_text_style_user_push(pwd, "DEFAULT='font_size=18'");
+   evas_object_smart_callback_add(pwd, "activated", _auth_ok, popup_data);
+   evas_object_smart_callback_add(pwd, "aborted", _auth_cancel, popup_data);
    evas_object_size_hint_weight_set(pwd, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(pwd, EVAS_HINT_FILL, EVAS_HINT_FILL);
    elm_table_pack(table, pwd, 1, 1, 2, 1);
