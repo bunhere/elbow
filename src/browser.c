@@ -20,6 +20,13 @@
 #endif
 #endif
 
+typedef struct {
+   Evas_Object *popup;
+   Evas_Object *entry;
+   Evas_Object *pwd;
+   void *data;
+} Popup_Data;
+
 static void _urlbar_activated(void *data, Evas_Object *entry, void *event_info);
 static void _urlbar_unfocused(void *data, Evas_Object *entry, void *event_info);
 static void _urlbar_filter_prepend(void *data, Evas_Object *entry, char **text);
@@ -212,6 +219,136 @@ _back_forward_list_changed_cb(void *data, Evas_Object *o, void *event_info)
    elm_object_disabled_set(bd->urlbar.forward_button, !webview_forward_possible(o));
 }
 
+#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+static void
+_auth_cancel(void *data, Evas_Object *obj, void *event_info)
+{
+    Popup_Data *popup_data = (Popup_Data *)data;
+    Ewk_Auth_Request *request = (Ewk_Auth_Request *)popup_data->data;
+
+    ewk_auth_request_cancel(request);
+    ewk_object_unref(request);
+
+    evas_object_del(popup_data->popup);
+    free(popup_data);
+}
+
+static void
+_auth_ok(void *data, Evas_Object *obj, void *event_info)
+{
+    Popup_Data *popup_data = (Popup_Data *)data;
+    Ewk_Auth_Request *request = (Ewk_Auth_Request *)popup_data->data;
+
+    const char *username = elm_entry_entry_get(popup_data->entry);
+    const char *password = elm_entry_entry_get(popup_data->pwd);
+    ewk_auth_request_authenticate(request, username, password);
+    ewk_object_unref(request);
+
+    evas_object_del(popup_data->popup);
+    free(popup_data);
+}
+
+static void
+_authentication_request_cb(void *data, Evas_Object *o, void *event_info)
+{
+   BROWSER_CALL_LOG("");
+
+   Evas_Object *popup, *entry, *pwd;
+
+   Browser_Data *bd = data;
+
+   Popup_Data *popup_data = (Popup_Data *)malloc(sizeof(Popup_Data));
+   if (!popup_data) return;
+
+   Ewk_Auth_Request *request = ewk_object_ref((Ewk_Auth_Request *)event_info);
+   popup_data->data = request;
+
+   popup_data->popup = popup = elm_popup_add(bd->win);
+   evas_object_size_hint_weight_set(popup, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   elm_object_part_text_set(popup, "title,text", "Authentication Required");
+
+   /* Popup Content */
+   Evas_Object *vbox = elm_box_add(popup);
+   elm_box_padding_set(vbox, 0, 4);
+   evas_object_size_hint_weight_set(vbox, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(vbox, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_object_content_set(popup, vbox);
+   evas_object_show(vbox);
+
+   /* Authentication message */
+   Evas_Object *label = elm_label_add(popup);
+   elm_label_line_wrap_set(label, ELM_WRAP_WORD);
+   Eina_Strbuf *auth_text = eina_strbuf_new();
+   const char *host = ewk_auth_request_host_get(request);
+   const char *realm = ewk_auth_request_realm_get(request);
+   eina_strbuf_append_printf(auth_text, "A username and password are being requested by %s. The site says: \"%s\"", host, realm ? realm : "");
+   elm_object_text_set(label, eina_strbuf_string_get(auth_text));
+   eina_strbuf_free(auth_text);
+   evas_object_size_hint_weight_set(label, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(label, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_box_pack_end(vbox, label);
+   evas_object_show(label);
+
+   /* Credential table */
+   Evas_Object *table = elm_table_add(popup);
+   elm_table_padding_set(table, 2, 2);
+   elm_table_homogeneous_set(table, EINA_TRUE);
+   evas_object_size_hint_weight_set(table, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(table, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_box_pack_end(vbox, table);
+   evas_object_show(table);
+
+   /* Username row */
+   Evas_Object *username_label = elm_label_add(popup);
+   elm_object_text_set(username_label, "Username:");
+   evas_object_size_hint_weight_set(username_label, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(username_label, 1, EVAS_HINT_FILL);
+   elm_table_pack(table, username_label, 0, 0, 1, 1);
+   evas_object_show(username_label);
+
+   popup_data->entry = entry = elm_entry_add(popup);
+   elm_entry_scrollable_set(entry, EINA_TRUE);
+   elm_entry_single_line_set(entry, EINA_TRUE);
+   elm_entry_text_style_user_push(entry, "DEFAULT='font_size=18'");
+   const char *suggested_username = ewk_auth_request_suggested_username_get(request);
+   elm_entry_entry_set(entry, suggested_username ? suggested_username : "");
+   evas_object_size_hint_weight_set(entry, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(entry, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_table_pack(table, entry, 1, 0, 2, 1);
+   elm_object_focus_set(entry, EINA_TRUE);
+   evas_object_show(entry);
+
+   /* Password row */
+   Evas_Object *password_label = elm_label_add(popup);
+   elm_object_text_set(password_label, "Password:");
+   evas_object_size_hint_weight_set(password_label, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(password_label, 1, EVAS_HINT_FILL);
+   elm_table_pack(table, password_label, 0, 1, 1, 1);
+   evas_object_show(password_label);
+
+   popup_data->pwd = pwd = elm_entry_add(popup);
+   elm_entry_scrollable_set(pwd, EINA_TRUE);
+   elm_entry_single_line_set(pwd, EINA_TRUE);
+   elm_entry_password_set(pwd, EINA_TRUE);
+   elm_entry_text_style_user_push(pwd, "DEFAULT='font_size=18'");
+   evas_object_size_hint_weight_set(pwd, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+   evas_object_size_hint_align_set(pwd, EVAS_HINT_FILL, EVAS_HINT_FILL);
+   elm_table_pack(table, pwd, 1, 1, 2, 1);
+   evas_object_show(pwd);
+
+   /* Popup buttons */
+   Evas_Object *cancel_button = elm_button_add(popup);
+   elm_object_text_set(cancel_button, "Cancel");
+   elm_object_part_content_set(popup, "button1", cancel_button);
+   evas_object_smart_callback_add(cancel_button, "clicked", _auth_cancel, popup_data);
+   Evas_Object *ok_button = elm_button_add(popup);
+   elm_object_text_set(ok_button, "OK");
+   elm_object_part_content_set(popup, "button2", ok_button);
+   evas_object_smart_callback_add(ok_button, "clicked", _auth_ok, popup_data);
+   evas_object_show(popup);
+}
+#endif
+
 static void
 _inspector_create_cb(void *userData, Evas_Object *o, void *eventInfo)
 {
@@ -344,8 +481,9 @@ _favicon_changed_cb(void *data, Evas_Object *o, void *event_info)
    favicon = ewk_favicon_database_icon_get(ewk_context_favicon_database_get(ewk_view_context_get(o)), ewk_view_url_get(o), evas_object_evas_get(o));
    if (favicon)
      {
+        //FIXME: just for test
         evas_object_move(favicon, 0, 0);
-        evas_object_resize(favicon, 100, 100);
+        evas_object_resize(favicon, 16, 16);
         evas_object_show(favicon);
      }
 #endif
@@ -357,7 +495,8 @@ _browser_callbacks_register(Browser_Data *bd, Evas_Object *webview)
 #define SMART_CALLBACK_ADD(signal, func) \
        evas_object_smart_callback_add(EWKVIEW(webview), signal, func, bd)
 
-#if defined(USE_WEBKIT2)
+#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+   SMART_CALLBACK_ADD("authentication,request", _authentication_request_cb);
    SMART_CALLBACK_ADD("back,forward,list,changed", _back_forward_list_changed_cb);
 #endif
    SMART_CALLBACK_ADD("inspector,view,create", _inspector_create_cb);
