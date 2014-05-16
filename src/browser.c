@@ -482,11 +482,13 @@ _load_finished_cb(void *data, Evas_Object *o, void *event_info)
 }
 
 static void
-_favicon_changed_cb(void *data, Evas_Object *o, void *event_info)
+_favicon_changed_cb(Ewk_Favicon_Database *database, const char *url, void *user_data)
 {
+   BROWSER_CALL_LOG("");
 #if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+   Browser_Data *bd = user_data;
    Evas_Object* favicon;
-   favicon = ewk_favicon_database_icon_get(ewk_context_favicon_database_get(ewk_view_context_get(o)), ewk_view_url_get(o), evas_object_evas_get(o));
+   favicon = ewk_favicon_database_icon_get(database, url, evas_object_evas_get(bd->layout));
    if (favicon)
      {
         //FIXME: just for test
@@ -518,9 +520,12 @@ _browser_callbacks_register(Browser_Data *bd, Evas_Object *webview)
    SMART_CALLBACK_ADD("load,error", _load_error_cb);
    SMART_CALLBACK_ADD("load,progress", _load_progress_cb);
    SMART_CALLBACK_ADD("load,finished", _load_finished_cb);
-   SMART_CALLBACK_ADD("favicon,changed", _favicon_changed_cb);
 
 #undef SMART_CALLBACK_ADD
+
+#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+   ewk_favicon_database_icon_change_callback_add(ewk_context_favicon_database_get(ewk_view_context_get(EWKVIEW(webview))), _favicon_changed_cb, bd);
+#endif
 
    evas_object_event_callback_add(webview, EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, bd);
 }
@@ -545,9 +550,12 @@ _browser_callbacks_deregister(Browser_Data *bd, Evas_Object *webview)
    SMART_CALLBACK_DEL("load,error", _load_error_cb);
    SMART_CALLBACK_DEL("load,progress", _load_progress_cb);
    SMART_CALLBACK_DEL("load,finished", _load_finished_cb);
-   SMART_CALLBACK_DEL("favicon,changed", _favicon_changed_cb);
 
 #undef SMART_CALLBACK_ADD
+
+#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+   ewk_favicon_database_icon_change_callback_del(ewk_context_favicon_database_get(ewk_view_context_get(EWKVIEW(webview))), _favicon_changed_cb);
+#endif
 }
 
 static Evas_Object *
