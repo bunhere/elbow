@@ -629,6 +629,7 @@ browser_add(Application_Data *ad, const char *url)
    // urlbar.entry
    bd->urlbar.entry = elm_entry_add(bd->win);
    elm_entry_single_line_set(bd->urlbar.entry, EINA_TRUE);
+   elm_entry_input_panel_layout_set(bd->urlbar.entry, ELM_INPUT_PANEL_LAYOUT_URL);
    evas_object_size_hint_weight_set(bd->urlbar.entry, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(bd->urlbar.entry, EVAS_HINT_FILL, EVAS_HINT_FILL);
    evas_object_smart_callback_add(bd->urlbar.entry, "activated", _urlbar_activated, bd);
