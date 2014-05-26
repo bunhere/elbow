@@ -219,7 +219,7 @@ _back_forward_list_changed_cb(void *data, Evas_Object *o, void *event_info)
    elm_object_disabled_set(bd->urlbar.forward_button, !webview_forward_possible(o));
 }
 
-#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
 static void
 _auth_cancel(void *data, Evas_Object *obj, void *event_info)
 {
@@ -476,16 +476,16 @@ _load_finished_cb(void *data, Evas_Object *o, void *event_info)
    _back_forward_list_changed_cb(data, o, event_info);
 #endif
 
-#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    ewk_view_script_execute(o, "var _wkrss = document.querySelector(\"link[type='application/rss+xml']\"); _wkrss ? _wkrss.href : \"\";", script_execute_result_cb, bd);
 #endif
 }
 
+#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
 static void
 _favicon_changed_cb(Ewk_Favicon_Database *database, const char *url, void *user_data)
 {
    BROWSER_CALL_LOG("");
-#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
    Browser_Data *bd = user_data;
    Evas_Object* favicon;
    favicon = ewk_favicon_database_icon_get(database, url, evas_object_evas_get(bd->layout));
@@ -496,8 +496,8 @@ _favicon_changed_cb(Ewk_Favicon_Database *database, const char *url, void *user_
         evas_object_resize(favicon, 16, 16);
         evas_object_show(favicon);
      }
-#endif
 }
+#endif
 
 static void
 _browser_callbacks_register(Browser_Data *bd, Evas_Object *webview)
@@ -505,7 +505,7 @@ _browser_callbacks_register(Browser_Data *bd, Evas_Object *webview)
 #define SMART_CALLBACK_ADD(signal, func) \
        evas_object_smart_callback_add(EWKVIEW(webview), signal, func, bd)
 
-#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    SMART_CALLBACK_ADD("authentication,request", _authentication_request_cb);
    SMART_CALLBACK_ADD("back,forward,list,changed", _back_forward_list_changed_cb);
 #endif
@@ -523,7 +523,7 @@ _browser_callbacks_register(Browser_Data *bd, Evas_Object *webview)
 
 #undef SMART_CALLBACK_ADD
 
-#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    ewk_favicon_database_icon_change_callback_add(ewk_context_favicon_database_get(ewk_view_context_get(EWKVIEW(webview))), _favicon_changed_cb, bd);
 #endif
 
@@ -553,7 +553,7 @@ _browser_callbacks_deregister(Browser_Data *bd, Evas_Object *webview)
 
 #undef SMART_CALLBACK_ADD
 
-#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    ewk_favicon_database_icon_change_callback_del(ewk_context_favicon_database_get(ewk_view_context_get(EWKVIEW(webview))), _favicon_changed_cb);
 #endif
 }

@@ -26,7 +26,7 @@ Evas_Object *webview_ewk_add(Evas_Object* parent, Browser_Data* bd);
 #define webview_user_agent_set        ewk_view_setting_user_agent_set
 
 #define WEBVIEW_TITLE                 ewk_view_title_get
-#define WEBVIEW_URL                   ewk_view_url_get
+#define WEBVIEW_URL                   ewk_view_uri_get
 
 #define EWKVIEW(o)    (o)
 

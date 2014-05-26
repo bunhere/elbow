@@ -21,7 +21,7 @@ webview_add(Browser_Data *bd)
 
    //FIXME : Check installation path(for release) with build directory(for development)
    ewk_view_theme_set(EWKVIEW(web), THEME_BUILD_PATH "/webkit.edj");
-#if defined(USE_EWEBKIT2) || defined(ELM_WEB2)
+#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    ewk_context_favicon_database_directory_set(ewk_view_context_get(EWKVIEW(web)), NULL);
 #endif
 

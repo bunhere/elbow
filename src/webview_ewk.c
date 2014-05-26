@@ -99,8 +99,6 @@ Evas_Object *webview_ewk_add(Evas_Object *parent, Browser_Data *bd)
    view_data *sd = (view_data *)evas_object_smart_data_get(ewkView);
    sd->bd= bd;
 
-   ewk_view_setting_tiled_backing_store_enabled_set(ewkView, EINA_TRUE);
-
    return ewkView;
 }
 #endif
