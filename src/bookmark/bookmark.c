@@ -3,12 +3,15 @@
  */
 
 #include "bookmark.h"
+
+#include "log.h"
+#include <sqlite3.h>
 #include <Eina.h>
 
 struct _Bookmark_Item
 {
-   Eina_Stringshare *title;
    Eina_Stringshare *url;
+   Eina_Stringshare *title;
 };
 typedef struct _Bookmark_Item Bookmark_Item;
 
@@ -26,8 +29,7 @@ _bookmark_create()
    Bookmark *ret;
 
    ret = (Bookmark *)malloc(sizeof(Bookmark));
-
-   // Just for demo
+   ret->items = NULL;
 
    return ret;
 }
@@ -43,7 +45,23 @@ _bookmark_get()
 Eina_Bool
 bookmark_add_item(Eina_Stringshare *title, Eina_Stringshare *url)
 {
-   Bookmark_Item *item = (Bookmark_Item *)malloc(sizeof(Bookmark_Item));
+   BROWSER_CALL_LOG("");
+
+   Bookmark *bm = _bookmark_get();
+   void *data;
+   Eina_List *l;
+
+   // check exist
+   EINA_LIST_FOREACH(bm->items, l, data) {
+      Bookmark_Item *item = data;
+      if (!strcmp(url, item->url)) return EINA_FALSE;
+   }
+
+   Bookmark_Item *added = (Bookmark_Item*)malloc(sizeof(Bookmark_Item));
+   added->url = eina_stringshare_ref(url);
+   added->title = eina_stringshare_ref(title);
+
+   BROWSER_LOGD("%s/%s", added->url, added->title);
 
    return EINA_FALSE;
 }
@@ -55,7 +73,7 @@ bookmark_items()
 }
 
 void
-bookmark_shudown()
+bookmark_shutdown()
 {
    if (!_bookmark_instance) return;
 

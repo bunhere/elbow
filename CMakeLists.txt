@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(Elbow)
+
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 add_definitions(-DPROJECT_NAME=\"${PROJECT_NAME}\")
 
 add_definitions(-DDEFAULT_WIDTH=800)
@@ -16,6 +19,8 @@ find_package(Eina REQUIRED)
 find_package(Evas REQUIRED)
 find_package(Elementary REQUIRED)
 
+find_package(Sqlite REQUIRED)
+
 if ("${WEBKIT_BACKEND}" STREQUAL "ewebkit")
     find_package(EWebKit REQUIRED)
     add_definitions(-DUSE_EWEBKIT=1)
@@ -26,8 +31,6 @@ if ("${WEBKIT_BACKEND}" STREQUAL "ewebkit")
     foreach(flag ${PKGS_CFLAGS})
         set(ELBOW_CFLAGS "${ELBOW_CFLAGS} ${flag}")
     endforeach(flag)
-
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ELBOW_CFLAGS}")
 elseif ("${WEBKIT_BACKEND}" STREQUAL "ewebkit2")
     find_package(EWebKit2 REQUIRED)
     add_definitions(-DUSE_EWEBKIT2=1)
@@ -41,21 +44,21 @@ else ()
     else ()
         find_package(EWebKit2 REQUIRED)
     endif ()
-
 endif ()
 
 message("Selected web backend is ${WEBKIT_BACKEND}/${USE_WEBKIT}")
 
 set(ELBOW_SOURCES
+    src/bookmark/bookmark.c
+
     src/app.c
-    src/bookmark.c
     src/browser.c
     src/homescreen.c
     src/main.c
     src/webview.c
     src/webview_elm.c
-    src/webview_ewk.c
     src/webview_ewk2.c
+    src/webview_ewk.c
 )
 
 set(ELBOW_INCLUDE_DIRS
@@ -64,6 +67,7 @@ set(ELBOW_INCLUDE_DIRS
     ${ELEMENTARY_INCLUDE_DIRS}
     ${EWEBKIT_INCLUDE_DIR}
     ${EWEBKIT2_INCLUDE_DIR}
+    ${SQLITE_INCLUDE_DIR}
 )
 
 set(ELBOW_LIBRARIES
@@ -76,15 +80,16 @@ set(ELBOW_LIBRARIES
     ${EWEBKIT_LIBRARY}
     ${EWEBKIT2_LIBRARY}
     ${EVAS_LIBRARIES}
+    ${SQLITE_LIBRARIES}
 )
 
-message("::: ${ELBOW_LIBRARIES}")
 add_subdirectory(data/themes)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ELBOW_CFLAGS}")
 
 add_executable(elbow ${ELBOW_SOURCES})
 include_directories(${ELBOW_INCLUDE_DIRS})
+include_directories(${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(elbow ${ELBOW_LIBRARIES})
 
 install(TARGETS elbow DESTINATION ${EXEC_INSTALL_DIR})

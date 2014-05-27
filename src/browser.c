@@ -2,13 +2,15 @@
  * Copyright (C) 2013-2014 Ryuan Choi
  */
 
-#include <Edje.h>
-#include <Elementary.h>
-#include "app.h"
 #include "browser.h"
+
+#include "app.h"
+#include "bookmark/bookmark.h"
 #include "homescreen.h"
 #include "log.h"
 #include "webview.h"
+#include <Edje.h>
+#include <Elementary.h>
 
 #if defined(USE_EWEBKIT)
 #include <EWebKit.h>
@@ -187,6 +189,13 @@ _browser_tab_previous(Browser_Tab *tab, Browser_Data *bd)
     if (!ltmp) ltmp = eina_list_last(bd->tabs);
 
     _browser_tab_active(bd, eina_list_data_get(ltmp));
+}
+
+static void
+_browser_bookmark_add(Browser_Tab *tab)
+{
+   if (tab->webview)
+     bookmark_add_item(WEBVIEW_URL(tab->webview), WEBVIEW_TITLE(tab->webview));
 }
 
 static Eina_Bool
@@ -795,6 +804,10 @@ browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool
        {
           if (*keyname == 'F')
             {
+            }
+          else if (!strcmp(keyname, "d"))
+            {
+               _browser_bookmark_add(bd->active_tab);
             }
           else if (!strcmp(keyname, "b"))
             {  // Back

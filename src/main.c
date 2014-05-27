@@ -5,6 +5,7 @@
 #include <Elementary.h>
 #include "app.h"
 #include "browser.h"
+#include "bookmark/bookmark.h"
 #include "log.h"
 #include "webview.h"
 
@@ -77,6 +78,8 @@ elm_main(int argc, char** argv)
    elm_run();
 
    ewk_shutdown();
+
+   bookmark_shutdown();
 
    elm_shutdown();
 
