@@ -5,6 +5,7 @@
 #define browser_h
 
 #include <Evas.h>
+#include <Elementary.h>
 
 typedef struct _Application_Data Application_Data;
 
@@ -13,6 +14,8 @@ struct _Browser_Tab
    Evas_Object *webview;
    Evas_Object *ewkview; /* Just for easy access */
    Evas_Object *homescreen;
+
+   Elm_Object_Item *toolbar_item;
 };
 typedef struct _Browser_Tab Browser_Tab;
 
@@ -26,6 +29,7 @@ struct _Browser_Data
    Browser_Tab *active_tab;
    Eina_List *tabs;
 
+   Evas_Object *tabbar;
    struct {
       Evas_Object *bar;
       Evas_Object *back_button;

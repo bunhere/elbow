@@ -44,6 +44,23 @@ static void _progress_update(Browser_Data* bd, float progress);
 // TAB
 static void _browser_tab_active(Browser_Data *bd, Browser_Tab *active);
 
+static void
+_tabbar_item_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
+{
+   Browser_Tab *tab = data;
+   Browser_Data *bd = NULL;
+
+   if (tab->webview)
+     bd = evas_object_data_get(tab->webview, "_container");
+   else if (tab->homescreen)
+     bd = evas_object_data_get(tab->homescreen, "_container");
+
+   // is it possible?
+   if (!bd) return;
+
+   _browser_tab_active(bd, tab);
+}
+
 static Browser_Tab *
 _browser_tab_add(Browser_Data *bd, const char *url)
 {
@@ -77,6 +94,9 @@ _browser_tab_add(Browser_Data *bd, const char *url)
         // homescreen
         new_tab->homescreen = homescreen = home_screen_add(bd);
      }
+
+   new_tab->toolbar_item = elm_toolbar_item_append(bd->tabbar, NULL, url ? url : "about:home", _tabbar_item_cb, new_tab);
+   elm_toolbar_item_selected_set(new_tab->toolbar_item, EINA_TRUE);
 
    _progress_update(bd, 0);
 
@@ -124,11 +144,14 @@ _browser_tab_active(Browser_Data *bd, Browser_Tab *active)
    Evas_Object *old;
    Evas_Object *tab_content;
 
+   const char *title = NULL;
+
    if (active->webview)
      {
         tab_content = active->webview;
         elm_object_text_set(bd->urlbar.entry, WEBVIEW_URL(tab_content));
-        elm_win_title_set(bd->win, WEBVIEW_TITLE(tab_content));
+        title = WEBVIEW_TITLE(tab_content);
+        elm_win_title_set(bd->win, title);
         _progress_update(bd, 0); //FIXME update as current progress
      }
    else
@@ -146,6 +169,9 @@ _browser_tab_active(Browser_Data *bd, Browser_Tab *active)
 
    elm_object_part_content_set(bd->layout, "content", tab_content);
    evas_object_show(tab_content);
+
+   if (bd->active_tab->toolbar_item)
+     elm_toolbar_item_selected_set(bd->active_tab->toolbar_item, EINA_TRUE);
 }
 
 static void
@@ -394,6 +420,15 @@ _title_changed_cb(void *data, Evas_Object *o, void *event_info)
     const char* title = (const char *)event_info;
 #endif
 
+   if (bd->active_tab->toolbar_item)
+     {
+         //TODO: I want to change label only.
+         Elm_Toolbar_Item_State *current = elm_toolbar_item_state_get(bd->active_tab->toolbar_item);
+         Elm_Toolbar_Item_State *new = elm_toolbar_item_state_add(bd->active_tab->toolbar_item, NULL, title, _tabbar_item_cb, bd->active_tab);
+         elm_toolbar_item_state_set(bd->active_tab->toolbar_item, new);
+         elm_toolbar_item_state_del(bd->active_tab->toolbar_item, current);
+     }
+
    elm_win_title_set(bd->win, title);
 }
 
@@ -610,6 +645,15 @@ browser_add(Application_Data *ad, const char *url)
    elm_layout_file_set(bd->layout, ad->main_layout_path, "main_layout");
    elm_win_resize_object_add(bd->win, bd->layout);
    evas_object_show(bd->layout);
+
+   // tabbar
+   bd->tabbar = elm_toolbar_add(bd->win);
+   elm_toolbar_align_set(bd->tabbar, 0.0);
+   elm_toolbar_shrink_mode_set(bd->tabbar, ELM_TOOLBAR_SHRINK_SCROLL);
+   evas_object_size_hint_align_set(bd->tabbar, EVAS_HINT_FILL, 0.0);
+   evas_object_show(bd->tabbar);
+
+   elm_object_part_content_set(bd->layout, "tabbar", bd->tabbar);
 
    // urlbar
    bd->urlbar.activated = EINA_FALSE;

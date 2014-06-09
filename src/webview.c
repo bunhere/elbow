@@ -18,6 +18,7 @@ webview_add(Browser_Data *bd)
    Evas_Object *web;
 
    web = webview_ewk_add(bd->win, bd);
+   evas_object_data_set(web, "_container", bd);
 
    //FIXME : Check installation path(for release) with build directory(for development)
    ewk_view_theme_set(EWKVIEW(web), THEME_BUILD_PATH "/webkit.edj");
