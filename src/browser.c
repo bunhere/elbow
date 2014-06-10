@@ -36,8 +36,8 @@ static void _urlbar_filter_prepend(void *data, Evas_Object *entry, char **text);
 static void _browser_focus_in(void *data, Evas *e, Evas_Object *obj, void *event_info);
 static void _browser_focus_out(void *data, Evas *e, Evas_Object *obj, void *event_info);
 
-static void _browser_callbacks_register(Browser_Data *bd, Evas_Object *webview);
-static void _browser_callbacks_deregister(Browser_Data *bd, Evas_Object *webview);
+static void _browser_callbacks_register(Browser_Data *bd, Browser_Tab *tab, Evas_Object *webview);
+static void _browser_callbacks_deregister(Browser_Data *bd, Browser_Tab *tab, Evas_Object *webview);
 
 static void _progress_update(Browser_Data* bd, float progress);
 
@@ -48,15 +48,7 @@ static void
 _tabbar_item_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
 {
    Browser_Tab *tab = data;
-   Browser_Data *bd = NULL;
-
-   if (tab->webview)
-     bd = evas_object_data_get(tab->webview, "_container");
-   else if (tab->homescreen)
-     bd = evas_object_data_get(tab->homescreen, "_container");
-
-   // is it possible?
-   if (!bd) return;
+   Browser_Data *bd = tab->bd;
 
    _browser_tab_active(bd, tab);
 }
@@ -68,6 +60,7 @@ _browser_tab_add(Browser_Data *bd, const char *url)
    Browser_Tab *new_tab;
 
    new_tab = malloc(sizeof(Browser_Tab));
+   new_tab->bd = bd;
    //new_tab->webview = NULL;
    //new_tab->ewkview = NULL;
 
@@ -81,7 +74,7 @@ _browser_tab_add(Browser_Data *bd, const char *url)
         new_tab->webview = webview = webview_add(bd);
         new_tab->ewkview = EWKVIEW(webview);
 
-        _browser_callbacks_register(bd, webview);
+        _browser_callbacks_register(bd, new_tab, webview);
 
         webview_url_set(webview, url);
      }
@@ -183,7 +176,7 @@ _browser_tab_url_set(Browser_Tab *tab, Browser_Data *bd, const char *url)
         tab->webview = webview = webview_add(bd);
         tab->ewkview = EWKVIEW(webview);
 
-        _browser_callbacks_register(bd, webview);
+        _browser_callbacks_register(bd, tab, webview);
 
         elm_object_part_content_set(bd->layout, "content", webview);
         evas_object_del(tab->homescreen);
@@ -247,8 +240,9 @@ win_delete_request_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info
 static void
 _back_forward_list_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
-   Browser_Data *bd = data;
-   if (bd->active_tab->ewkview != o) return;
+   Browser_Tab *tab = data;
+   Browser_Data *bd = tab->bd;
+   if (!bd->active_tab || bd->active_tab != tab) return;
 
    elm_object_disabled_set(bd->urlbar.back_button, !webview_back_possible(o)); 
    elm_object_disabled_set(bd->urlbar.forward_button, !webview_forward_possible(o));
@@ -296,7 +290,8 @@ _authentication_request_cb(void *data, Evas_Object *o, void *event_info)
 
    Evas_Object *popup, *entry, *pwd;
 
-   Browser_Data *bd = data;
+   Browser_Tab *tab = data;
+   Browser_Data *bd = tab->bd;
 
    Popup_Data *popup_data = (Popup_Data *)malloc(sizeof(Popup_Data));
    if (!popup_data) return;
@@ -393,14 +388,14 @@ _authentication_request_cb(void *data, Evas_Object *o, void *event_info)
 #endif
 
 static void
-_inspector_create_cb(void *userData, Evas_Object *o, void *eventInfo)
+_inspector_create_cb(void *data, Evas_Object *o, void *event_info)
 {
    BROWSER_CALL_LOG("");
    //TODO: needToImplement
 }
 
 static void
-_inspector_close_cb(void *userData, Evas_Object *o, void *eventInfo)
+_inspector_close_cb(void *data, Evas_Object *o, void *event_info)
 {
    BROWSER_CALL_LOG("");
    //TODO: needToImplement
@@ -409,26 +404,26 @@ _inspector_close_cb(void *userData, Evas_Object *o, void *eventInfo)
 static void
 _title_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
-   Browser_Data *bd = data;
-   if (!bd->active_tab || bd->active_tab->ewkview != o) return;
+   Browser_Tab *tab = data;
+   Browser_Data *bd = tab->bd;
 
    if (!event_info) return;
-
 #if defined(USE_EWEBKIT) || defined(ELM_WEB)
     const char* title = ((const Ewk_Text_With_Direction*)event_info)->string;
 #else
     const char* title = (const char *)event_info;
 #endif
 
-   if (bd->active_tab->toolbar_item)
+   if (tab->toolbar_item)
      {
          //TODO: I want to change label only.
-         Elm_Toolbar_Item_State *current = elm_toolbar_item_state_get(bd->active_tab->toolbar_item);
-         Elm_Toolbar_Item_State *new = elm_toolbar_item_state_add(bd->active_tab->toolbar_item, NULL, title, _tabbar_item_cb, bd->active_tab);
-         elm_toolbar_item_state_set(bd->active_tab->toolbar_item, new);
-         elm_toolbar_item_state_del(bd->active_tab->toolbar_item, current);
+         Elm_Toolbar_Item_State *current = elm_toolbar_item_state_get(tab->toolbar_item);
+         Elm_Toolbar_Item_State *new = elm_toolbar_item_state_add(tab->toolbar_item, NULL, title, _tabbar_item_cb, tab);
+         elm_toolbar_item_state_set(tab->toolbar_item, new);
+         elm_toolbar_item_state_del(tab->toolbar_item, current);
      }
 
+   if (!bd->active_tab || bd->active_tab != tab) return;
    elm_win_title_set(bd->win, title);
 }
 
@@ -437,8 +432,9 @@ _url_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
    BROWSER_CALL_LOG("");
 
-   Browser_Data *bd = data;
-   if (!bd->active_tab || bd->active_tab->ewkview != o) return;
+   Browser_Tab *tab = data;
+   Browser_Data *bd = tab->bd;
+   if (!bd->active_tab || bd->active_tab != tab) return;
 
    elm_object_text_set(bd->urlbar.entry, event_info);
    bd->user_focused = EINA_FALSE;
@@ -470,8 +466,9 @@ _progress_update(Browser_Data* bd, float progress)
 static void
 _load_progress_cb(void *data, Evas_Object *o, void *event_info)
 {
-   Browser_Data *bd = data;
-   if (!bd->active_tab || bd->active_tab->ewkview != o) return;
+   Browser_Tab *tab = data;
+   Browser_Data *bd = tab->bd;
+   if (!bd->active_tab || bd->active_tab != tab) return;
 
    _progress_update(bd, *((double *)event_info));
 }
@@ -505,8 +502,9 @@ script_execute_result_cb(Evas_Object *o, const char *value, void *data)
 static void
 _load_finished_cb(void *data, Evas_Object *o, void *event_info)
 {
-   Browser_Data *bd = data;
-   if (bd->active_tab->ewkview != o) return;
+   Browser_Tab *tab = data;
+   Browser_Data *bd = tab->bd;
+   if (bd->active_tab != tab) return;
 
    if (!bd->user_focused)
      {
@@ -517,7 +515,7 @@ _load_finished_cb(void *data, Evas_Object *o, void *event_info)
    _progress_update(bd, 0);
 
 #if !defined(USE_EWEBKIT2)
-   _back_forward_list_changed_cb(data, o, event_info);
+   _back_forward_list_changed_cb(tab, o, event_info);
 #endif
 
 #if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
@@ -544,10 +542,10 @@ _favicon_changed_cb(Ewk_Favicon_Database *database, const char *url, void *user_
 #endif
 
 static void
-_browser_callbacks_register(Browser_Data *bd, Evas_Object *webview)
+_browser_callbacks_register(Browser_Data *bd, Browser_Tab *tab, Evas_Object *webview)
 {
 #define SMART_CALLBACK_ADD(signal, func) \
-       evas_object_smart_callback_add(EWKVIEW(webview), signal, func, bd)
+       evas_object_smart_callback_add(EWKVIEW(webview), signal, func, tab)
 
 #if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    SMART_CALLBACK_ADD("authentication,request", _authentication_request_cb);
@@ -575,10 +573,10 @@ _browser_callbacks_register(Browser_Data *bd, Evas_Object *webview)
 }
 
 static void
-_browser_callbacks_deregister(Browser_Data *bd, Evas_Object *webview)
+_browser_callbacks_deregister(Browser_Data *bd, Browser_Tab *tab, Evas_Object *webview)
 {
 #define SMART_CALLBACK_DEL(signal, func) \
-       evas_object_smart_callback_del_full(EWKVIEW(webview), signal, func, bd)
+       evas_object_smart_callback_del_full(EWKVIEW(webview), signal, func, tab)
 
 #if defined(USE_WEBKIT2)
    SMART_CALLBACK_DEL("back,forward,list,changed", _back_forward_list_changed_cb);

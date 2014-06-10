@@ -33,7 +33,6 @@ home_screen_add(Browser_Data *bd)
    if (!screen) return NULL;
 
    screen->layout = layout = elm_layout_add(bd->win);
-   evas_object_data_set(layout, "_container", bd);
    elm_layout_file_set(layout, bd->ad->main_layout_path, "home_screen");
 
    evas_object_event_callback_add(layout, EVAS_CALLBACK_DEL, _home_screen_del, screen);

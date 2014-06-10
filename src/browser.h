@@ -9,8 +9,11 @@
 
 typedef struct _Application_Data Application_Data;
 
+typedef struct _Browser_Data Browser_Data;
+
 struct _Browser_Tab
 {
+   Browser_Data *bd; /* browser */
    Evas_Object *webview;
    Evas_Object *ewkview; /* Just for easy access */
    Evas_Object *homescreen;
@@ -48,7 +51,6 @@ struct _Browser_Data
    Eina_Bool user_focused;
    Eina_Bool destroyed;
 };
-typedef struct _Browser_Data Browser_Data;
 
 Browser_Data *browser_add(Application_Data *ad, const char *url);
 void browser_del(Browser_Data *bd);
