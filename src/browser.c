@@ -43,6 +43,7 @@ static void _progress_update(Browser_Data* bd, float progress);
 
 // TAB
 static void _browser_tab_active(Browser_Data *bd, Browser_Tab *active);
+static void _browser_tab_move_to(Browser_Data *bd, int index);
 
 static void
 _tabbar_item_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info EINA_UNUSED)
@@ -127,7 +128,7 @@ _browser_tab_del(Browser_Data *bd, Browser_Tab *tab, Eina_Bool update_active)
         browser_del(bd);
 }
 
-void
+static void
 _browser_tab_active(Browser_Data *bd, Browser_Tab *active)
 {
    BROWSER_CALL_LOG("");
@@ -165,6 +166,17 @@ _browser_tab_active(Browser_Data *bd, Browser_Tab *active)
 
    if (bd->active_tab->toolbar_item)
      elm_toolbar_item_selected_set(bd->active_tab->toolbar_item, EINA_TRUE);
+}
+
+static void
+_browser_tab_move_to(Browser_Data *bd, int index)
+{
+   BROWSER_CALL_LOG("%d", index);
+
+   Browser_Tab *tab = eina_list_nth(bd->tabs, index);
+   if (!tab) return;
+
+   _browser_tab_active(bd, tab);
 }
 
 static void
@@ -896,6 +908,11 @@ browser_keydown(Browser_Data *bd, const char *keyname, Eina_Bool ctrl, Eina_Bool
           if (!strcmp(keyname, "d"))
             {
                browser_urlbar_entry_focus_with_selection(bd);
+               return ECORE_CALLBACK_DONE;
+            }
+          else if (*keyname > '0' && *keyname <= '9')
+            {
+               _browser_tab_move_to(bd, *keyname - '0' - 1);
                return ECORE_CALLBACK_DONE;
             }
        }
