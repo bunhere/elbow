@@ -397,6 +397,28 @@ _authentication_request_cb(void *data, Evas_Object *o, void *event_info)
    evas_object_smart_callback_add(ok_button, "clicked", _auth_ok, popup_data);
    evas_object_show(popup);
 }
+
+static void
+_form_submission_request_cb(void *data, Evas_Object *o, void *event_info)
+{
+   void *d;
+   Eina_List *l;
+
+   BROWSER_CALL_LOG("");
+
+   if (!event_info) return;
+
+   Ewk_Form_Submission_Request *request = event_info;
+
+   Eina_List *list = ewk_form_submission_request_field_names_get(request);
+
+   EINA_LIST_FOREACH(list, l, d)
+     {
+        const char *name = d;
+        const char *value = ewk_form_submission_request_field_value_get(request, name);
+        fprintf(stderr, "%s:%s\n", name, value);
+     }
+}
 #endif
 
 static void
@@ -562,6 +584,7 @@ _browser_callbacks_register(Browser_Data *bd, Browser_Tab *tab, Evas_Object *web
 #if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    SMART_CALLBACK_ADD("authentication,request", _authentication_request_cb);
    SMART_CALLBACK_ADD("back,forward,list,changed", _back_forward_list_changed_cb);
+   SMART_CALLBACK_ADD("form,submission,request", _form_submission_request_cb);
 #endif
    SMART_CALLBACK_ADD("inspector,view,create", _inspector_create_cb);
    SMART_CALLBACK_ADD("inspector,view,close", _inspector_close_cb);
@@ -592,6 +615,7 @@ _browser_callbacks_deregister(Browser_Data *bd, Browser_Tab *tab, Evas_Object *w
 
 #if defined(USE_WEBKIT2)
    SMART_CALLBACK_DEL("back,forward,list,changed", _back_forward_list_changed_cb);
+   SMART_CALLBACK_DEL("form,submission,request", _form_submission_request_cb);
 #endif
    SMART_CALLBACK_DEL("inspector,view,create", _inspector_create_cb);
    SMART_CALLBACK_DEL("inspector,view,close", _inspector_close_cb);
