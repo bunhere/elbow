@@ -89,7 +89,7 @@ _browser_tab_add(Browser_Data *bd, const char *url)
         new_tab->homescreen = homescreen = home_screen_add(bd);
      }
 
-   new_tab->toolbar_item = elm_toolbar_item_append(bd->tabbar, NULL, url ? url : "about:home", _tabbar_item_cb, new_tab);
+   new_tab->toolbar_item = elm_toolbar_item_append(bd->tabbar, NULL, "New Tab  ", _tabbar_item_cb, new_tab);
    elm_toolbar_item_selected_set(new_tab->toolbar_item, EINA_TRUE);
 
    _progress_update(bd, 0);
