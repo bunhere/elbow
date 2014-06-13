@@ -21,6 +21,8 @@ webview_add(Browser_Data *bd)
    ewk_view_theme_set(EWKVIEW(web), THEME_BUILD_PATH "/webkit.edj");
 #if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    ewk_context_favicon_database_directory_set(ewk_view_context_get(EWKVIEW(web)), NULL);
+
+   ewk_settings_plugins_enabled_set(ewk_view_settings_get(EWKVIEW(web)), EINA_FALSE);
 #endif
 
    //webview_user_agent_set(web, MOBILE_USER_AGENT);
