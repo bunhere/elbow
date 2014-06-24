@@ -9,6 +9,7 @@ add_definitions(-DDEFAULT_WIDTH=800)
 add_definitions(-DDEFAULT_HEIGHT=600)
 add_definitions(-DTHEME_BUILD_PATH=\"${CMAKE_BINARY_DIR}/data/themes\") 
 add_definitions(-DDEVELOPER_MODE=1)
+
 set(EXEC_INSTALL_DIR "bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${EXEC_INSTALL_DIR})
 
@@ -49,7 +50,7 @@ endif ()
 message("Selected web backend is ${WEBKIT_BACKEND}/${USE_WEBKIT}")
 
 set(ELBOW_SOURCES
-    src/bookmark/bookmark.c
+    src/database/bookmark.c
 
     src/app.c
     src/browser.c
@@ -84,6 +85,7 @@ set(ELBOW_LIBRARIES
 )
 
 add_subdirectory(data/themes)
+add_subdirectory(src/tests)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ELBOW_CFLAGS}")
 

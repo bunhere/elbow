@@ -5,7 +5,7 @@
 #include "browser.h"
 
 #include "app.h"
-#include "bookmark/bookmark.h"
+#include "database/bookmark.h"
 #include "homescreen.h"
 #include "log.h"
 #include "webview.h"
@@ -226,7 +226,7 @@ static void
 _browser_bookmark_add(Browser_Tab *tab)
 {
    if (tab->webview)
-     bookmark_add_item(WEBVIEW_URL(tab->webview), WEBVIEW_TITLE(tab->webview));
+     bookmark_item_add(WEBVIEW_URL(tab->webview), WEBVIEW_TITLE(tab->webview));
 }
 
 static Eina_Bool
