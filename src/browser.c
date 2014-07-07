@@ -9,18 +9,9 @@
 #include "homescreen.h"
 #include "log.h"
 #include "webview.h"
+#include <EWebKit2.h>
 #include <Edje.h>
 #include <Elementary.h>
-
-#if defined(USE_EWEBKIT)
-#include <EWebKit.h>
-#elif defined(USE_ELM_WEB)
-#if defined(ELM_WEB)
-#include <EWebKit.h>
-#else
-#include <EWebKit2.h>
-#endif
-#endif
 
 typedef struct {
    Evas_Object *popup;
@@ -260,7 +251,6 @@ _back_forward_list_changed_cb(void *data, Evas_Object *o, void *event_info)
    elm_object_disabled_set(bd->urlbar.forward_button, !webview_forward_possible(o));
 }
 
-#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
 static void
 _auth_cancel(void *data, Evas_Object *obj, void *event_info)
 {
@@ -419,7 +409,6 @@ _form_submission_request_cb(void *data, Evas_Object *o, void *event_info)
         fprintf(stderr, "%s:%s\n", name, value);
      }
 }
-#endif
 
 static void
 _inspector_create_cb(void *data, Evas_Object *o, void *event_info)
@@ -442,11 +431,7 @@ _title_changed_cb(void *data, Evas_Object *o, void *event_info)
    Browser_Data *bd = tab->bd;
 
    if (!event_info) return;
-#if defined(USE_EWEBKIT) || defined(ELM_WEB)
-    const char* title = ((const Ewk_Text_With_Direction*)event_info)->string;
-#else
     const char* title = (const char *)event_info;
-#endif
 
    if (tab->toolbar_item)
      {
@@ -548,16 +533,9 @@ _load_finished_cb(void *data, Evas_Object *o, void *event_info)
 
    _progress_update(bd, 0);
 
-#if !defined(USE_EWEBKIT2)
-   _back_forward_list_changed_cb(tab, o, event_info);
-#endif
-
-#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    ewk_view_script_execute(o, "var _wkrss = document.querySelector(\"link[type='application/rss+xml']\"); _wkrss ? _wkrss.href : \"\";", script_execute_result_cb, bd);
-#endif
 }
 
-#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
 static void
 _favicon_changed_cb(Ewk_Favicon_Database *database, const char *url, void *user_data)
 {
@@ -573,7 +551,6 @@ _favicon_changed_cb(Ewk_Favicon_Database *database, const char *url, void *user_
         evas_object_show(favicon);
      }
 }
-#endif
 
 static void
 _browser_callbacks_register(Browser_Data *bd, Browser_Tab *tab, Evas_Object *webview)
@@ -581,28 +558,20 @@ _browser_callbacks_register(Browser_Data *bd, Browser_Tab *tab, Evas_Object *web
 #define SMART_CALLBACK_ADD(signal, func) \
        evas_object_smart_callback_add(EWKVIEW(webview), signal, func, tab)
 
-#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    SMART_CALLBACK_ADD("authentication,request", _authentication_request_cb);
    SMART_CALLBACK_ADD("back,forward,list,changed", _back_forward_list_changed_cb);
    SMART_CALLBACK_ADD("form,submission,request", _form_submission_request_cb);
-#endif
    SMART_CALLBACK_ADD("inspector,view,create", _inspector_create_cb);
    SMART_CALLBACK_ADD("inspector,view,close", _inspector_close_cb);
    SMART_CALLBACK_ADD("title,changed", _title_changed_cb);
-#if defined(USE_EWEBKIT)
-   SMART_CALLBACK_ADD("uri,changed", _url_changed_cb);
-#else
    SMART_CALLBACK_ADD("url,changed", _url_changed_cb);
-#endif
    SMART_CALLBACK_ADD("load,error", _load_error_cb);
    SMART_CALLBACK_ADD("load,progress", _load_progress_cb);
    SMART_CALLBACK_ADD("load,finished", _load_finished_cb);
 
 #undef SMART_CALLBACK_ADD
 
-#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    ewk_favicon_database_icon_change_callback_add(ewk_context_favicon_database_get(ewk_view_context_get(EWKVIEW(webview))), _favicon_changed_cb, bd);
-#endif
 
    evas_object_event_callback_add(webview, EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, bd);
 }
@@ -613,27 +582,19 @@ _browser_callbacks_deregister(Browser_Data *bd, Browser_Tab *tab, Evas_Object *w
 #define SMART_CALLBACK_DEL(signal, func) \
        evas_object_smart_callback_del_full(EWKVIEW(webview), signal, func, tab)
 
-#if defined(USE_WEBKIT2)
    SMART_CALLBACK_DEL("back,forward,list,changed", _back_forward_list_changed_cb);
    SMART_CALLBACK_DEL("form,submission,request", _form_submission_request_cb);
-#endif
    SMART_CALLBACK_DEL("inspector,view,create", _inspector_create_cb);
    SMART_CALLBACK_DEL("inspector,view,close", _inspector_close_cb);
    SMART_CALLBACK_DEL("title,changed", _title_changed_cb);
-#if defined(USE_EWEBKIT)
-   SMART_CALLBACK_DEL("uri,changed", _url_changed_cb);
-#else
    SMART_CALLBACK_DEL("url,changed", _url_changed_cb);
-#endif
    SMART_CALLBACK_DEL("load,error", _load_error_cb);
    SMART_CALLBACK_DEL("load,progress", _load_progress_cb);
    SMART_CALLBACK_DEL("load,finished", _load_finished_cb);
 
 #undef SMART_CALLBACK_ADD
 
-#if defined(USE_EWEBKIT2) || (defined(USE_ELM_WEB) && defined(ELM_WEB2))
    ewk_favicon_database_icon_change_callback_del(ewk_context_favicon_database_get(ewk_view_context_get(EWKVIEW(webview))), _favicon_changed_cb);
-#endif
 }
 
 static Evas_Object *

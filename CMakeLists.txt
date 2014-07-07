@@ -22,32 +22,17 @@ find_package(Elementary REQUIRED)
 
 find_package(Sqlite REQUIRED)
 
-if ("${WEBKIT_BACKEND}" STREQUAL "ewebkit")
-    find_package(EWebKit REQUIRED)
-    add_definitions(-DUSE_EWEBKIT=1)
-
-    include(FindPkgConfig)
-    pkg_check_modules(PKGS REQUIRED cairo libsoup-2.4)
-
-    foreach(flag ${PKGS_CFLAGS})
-        set(ELBOW_CFLAGS "${ELBOW_CFLAGS} ${flag}")
-    endforeach(flag)
-elseif ("${WEBKIT_BACKEND}" STREQUAL "ewebkit2")
+if ("${WEBKIT_BACKEND}" STREQUAL "ewebkit2")
     find_package(EWebKit2 REQUIRED)
     add_definitions(-DUSE_EWEBKIT2=1)
 else ()
     set(WEBKIT_BACKEND "elm_web")
     add_definitions(-DUSE_ELM_WEB=1)
 
-    # FIXME: ElementaryConfig.cmake should provide this
-    if ("${USE_WEBKIT}" STREQUAL "ewebkit")
-        find_package(EWebKit REQUIRED)
-    else ()
-        find_package(EWebKit2 REQUIRED)
-    endif ()
+    find_package(EWebKit2 REQUIRED)
 endif ()
 
-message("Selected web backend is ${WEBKIT_BACKEND}/${USE_WEBKIT}")
+message("Selected web backend is ${WEBKIT_BACKEND}")
 
 set(ELBOW_SOURCES
     src/database/bookmark.c
@@ -59,14 +44,12 @@ set(ELBOW_SOURCES
     src/webview.c
     src/webview_elm.c
     src/webview_ewk2.c
-    src/webview_ewk.c
 )
 
 set(ELBOW_INCLUDE_DIRS
     ${ECORE_FILE_INCLUDE_DIRS}
     ${EDJE_INCLUDE_DIRS}
     ${ELEMENTARY_INCLUDE_DIRS}
-    ${EWEBKIT_INCLUDE_DIR}
     ${EWEBKIT2_INCLUDE_DIR}
     ${SQLITE_INCLUDE_DIR}
 )
@@ -78,7 +61,6 @@ set(ELBOW_LIBRARIES
     ${EDJE_LIBRARIES}
     ${EINA_LIBRARIES}
     ${ELEMENTARY_LIBRARIES}
-    ${EWEBKIT_LIBRARY}
     ${EWEBKIT2_LIBRARY}
     ${EVAS_LIBRARIES}
     ${SQLITE_LIBRARIES}

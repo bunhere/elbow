@@ -15,22 +15,7 @@ Evas_Object *webview_ewk_add(Evas_Object* parent, Browser_Data* bd);
 /*
  * Each backend have similar APIs but different name.
  */
-#if defined(USE_EWEBKIT)
-#define webview_back                  ewk_view_back
-#define webview_back_possible         ewk_view_back_possible
-#define webview_focus_set             evas_object_focus_set
-#define webview_forward               ewk_view_forward
-#define webview_forward_possible      ewk_view_forward_possible
-#define webview_reload_bypass_cache   ewk_view_reload_full
-#define webview_url_set               ewk_view_uri_set
-#define webview_user_agent_set        ewk_view_setting_user_agent_set
-
-#define WEBVIEW_TITLE                 ewk_view_title_get
-#define WEBVIEW_URL                   ewk_view_uri_get
-
-#define EWKVIEW(o)    (o)
-
-#elif defined(USE_EWEBKIT2)
+#if defined(USE_EWEBKIT2)
 #define webview_back                  ewk_view_back
 #define webview_back_possible         ewk_view_back_possible
 #define webview_focus_set             evas_object_focus_set

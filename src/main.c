@@ -7,13 +7,8 @@
 #include "database/bookmark.h"
 #include "log.h"
 #include "webview.h"
-#include <Elementary.h>
-
-#if defined(USE_EWEBKIT)
-#include <EWebKit.h>
-#elif defined(USE_EWEBKIT2)
 #include <EWebKit2.h>
-#endif
+#include <Elementary.h>
 
 static Eina_Bool
 main_key_down_cb(void *data, int type EINA_UNUSED, void *ev)
