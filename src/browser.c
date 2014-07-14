@@ -241,6 +241,26 @@ win_delete_request_cb(void *data, Evas_Object *obj EINA_UNUSED, void *event_info
 }
 
 static void
+_favicon_changed_cb(Ewk_Favicon_Database *database, const char *url, void *user_data)
+{
+   BROWSER_CALL_LOG("");
+   Browser_Data *bd = user_data;
+   Evas_Object *favicon;
+
+   Evas_Object *old_icon = elm_object_part_content_unset(bd->urlbar.entry, "icon");
+   if (old_icon)
+     evas_object_del(old_icon);
+
+   favicon = ewk_favicon_database_icon_get(database, url, evas_object_evas_get(bd->layout));
+   fprintf(stderr, "%s << \n", evas_object_type_get(favicon));
+   if (favicon)
+     {
+        evas_object_size_hint_min_set(favicon, 32, 32);
+        elm_object_part_content_set(bd->urlbar.entry, "icon", favicon);
+     }
+}
+
+static void
 _back_forward_list_changed_cb(void *data, Evas_Object *o, void *event_info)
 {
    Browser_Tab *tab = data;
@@ -456,6 +476,7 @@ _url_changed_cb(void *data, Evas_Object *o, void *event_info)
    if (!bd->active_tab || bd->active_tab != tab) return;
 
    elm_object_text_set(bd->urlbar.entry, event_info);
+   _favicon_changed_cb(ewk_context_favicon_database_get(ewk_view_context_get(o)), event_info, bd);
    bd->user_focused = EINA_FALSE;
 }
 
@@ -537,24 +558,10 @@ _load_finished_cb(void *data, Evas_Object *o, void *event_info)
 }
 
 static void
-_favicon_changed_cb(Ewk_Favicon_Database *database, const char *url, void *user_data)
-{
-   BROWSER_CALL_LOG("");
-   Browser_Data *bd = user_data;
-   Evas_Object* favicon;
-   favicon = ewk_favicon_database_icon_get(database, url, evas_object_evas_get(bd->layout));
-   if (favicon)
-     {
-        //FIXME: just for test
-        evas_object_move(favicon, 0, 0);
-        evas_object_resize(favicon, 16, 16);
-        evas_object_show(favicon);
-     }
-}
-
-static void
 _browser_callbacks_register(Browser_Data *bd, Browser_Tab *tab, Evas_Object *webview)
 {
+   ewk_favicon_database_icon_change_callback_add(ewk_context_favicon_database_get(ewk_view_context_get(EWKVIEW(webview))), _favicon_changed_cb, bd);
+
 #define SMART_CALLBACK_ADD(signal, func) \
        evas_object_smart_callback_add(EWKVIEW(webview), signal, func, tab)
 
@@ -571,14 +578,14 @@ _browser_callbacks_register(Browser_Data *bd, Browser_Tab *tab, Evas_Object *web
 
 #undef SMART_CALLBACK_ADD
 
-   ewk_favicon_database_icon_change_callback_add(ewk_context_favicon_database_get(ewk_view_context_get(EWKVIEW(webview))), _favicon_changed_cb, bd);
-
    evas_object_event_callback_add(webview, EVAS_CALLBACK_MOUSE_DOWN, _mouse_down_cb, bd);
 }
 
 static void
 _browser_callbacks_deregister(Browser_Data *bd, Browser_Tab *tab, Evas_Object *webview)
 {
+   ewk_favicon_database_icon_change_callback_del(ewk_context_favicon_database_get(ewk_view_context_get(EWKVIEW(webview))), _favicon_changed_cb);
+
 #define SMART_CALLBACK_DEL(signal, func) \
        evas_object_smart_callback_del_full(EWKVIEW(webview), signal, func, tab)
 
@@ -593,8 +600,6 @@ _browser_callbacks_deregister(Browser_Data *bd, Browser_Tab *tab, Evas_Object *w
    SMART_CALLBACK_DEL("load,finished", _load_finished_cb);
 
 #undef SMART_CALLBACK_ADD
-
-   ewk_favicon_database_icon_change_callback_del(ewk_context_favicon_database_get(ewk_view_context_get(EWKVIEW(webview))), _favicon_changed_cb);
 }
 
 static Evas_Object *
@@ -677,6 +682,7 @@ browser_add(Application_Data *ad, const char *url)
    // urlbar.entry
    bd->urlbar.entry = elm_entry_add(bd->win);
    elm_entry_single_line_set(bd->urlbar.entry, EINA_TRUE);
+   elm_entry_scrollable_set(bd->urlbar.entry, EINA_TRUE);
    elm_entry_input_panel_layout_set(bd->urlbar.entry, ELM_INPUT_PANEL_LAYOUT_URL);
    evas_object_size_hint_weight_set(bd->urlbar.entry, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
    evas_object_size_hint_align_set(bd->urlbar.entry, EVAS_HINT_FILL, EVAS_HINT_FILL);
