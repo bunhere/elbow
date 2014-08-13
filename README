@@ -6,6 +6,6 @@ mkdir build && cd build
 cmake ..
 
 option: 
- - WEBKIT_BACKEND : Choose webkit backend. Default is elm_web ( ewebkit / ewebkit2 / elm_web )
-    ex) cmake .. -DWEBKIT_BACKEND=ewebkit
+ - WEBKIT_BACKEND : Choose webkit backend. Default is elm_web ( ewebkit2 / elm_web )
+    ex) cmake .. -DWEBKIT_BACKEND=ewebkit2
  
