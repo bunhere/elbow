@@ -70,6 +70,7 @@ add_subdirectory(data/themes)
 add_subdirectory(src/tests)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ELBOW_CFLAGS}")
+set(CMAKE_C_FLAGS "-Wall ${CMAKE_C_FLAGS}")
 
 add_executable(elbow ${ELBOW_SOURCES})
 include_directories(${ELBOW_INCLUDE_DIRS})

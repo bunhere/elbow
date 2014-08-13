@@ -6,6 +6,10 @@
 #include "browser.h"
 #include "webview.h"
 
+#if defined(USE_EWEBKIT2)
+#include <EWebKit2.h>
+#endif
+
 //Just for test
 #define MOBILE_USER_AGENT \
   "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en)  AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3 /" 
