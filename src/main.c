@@ -54,6 +54,8 @@ elm_main(int argc, char** argv)
 
    ewk_init();
 
+   elm_config_accel_preference_set("opengl");
+
    memset(&ad, 0x00, sizeof(ad));
 
    //FIXME : Check installation path(for release) with build directory(for development)
